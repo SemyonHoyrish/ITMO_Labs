@@ -1,0 +1,62 @@
+total 32
+-rw--w----  1 s467937 studs  74 30 сент. 08:48 cleffa4
+lrwxr-xr-x  1 s467937 studs  10 30 сент. 08:48 Copy_16 -> hitmonlee9
+-rw--w----  1 s467937 studs  85 30 сент. 08:48 deerling6
+-rw-r--r--  1 s467937 studs 166 30 сент. 08:48 deerling6_67
+-r--r--r--  2 s467937 studs  35 30 сент. 08:48 floatzel7
+dr-xrwxrwx  5 s467937 studs   9 30 сент. 08:48 hitmonlee9
+drwx-wxrwx  5 s467937 studs   8 30 сент. 08:48 mamoswine3
+dr-x-w-r--  4 s467937 studs   6 30 сент. 08:48 scizor7
+
+./hitmonlee9:
+total 12
+d-wxr-xr-x  3 s467937 studs   3 30 сент. 08:48 budew
+-rw-rw----  1 s467937 studs 137 30 сент. 08:48 espeon
+lrwxr-xr-x  1 s467937 studs   9 30 сент. 08:48 espeondeerling -> deerling6
+-r--r-----  1 s467937 studs 144 30 сент. 08:48 ferrothron
+-rw----r--  1 s467937 studs  34 30 сент. 08:48 leavanny
+dr-xr-x--x  2 s467937 studs   2 30 сент. 08:48 mamoswine
+drwxr-x--x  2 s467937 studs   2 30 сент. 08:48 snivy
+
+./hitmonlee9/budew:
+total 0
+ls: ./hitmonlee9/budew: Permission denied
+
+./hitmonlee9/mamoswine:
+total 0
+
+./hitmonlee9/snivy:
+total 0
+
+./mamoswine3:
+total 7
+d-wx--x--x  2 s467937 studs   3 30 сент. 08:48 combusken
+-rw-r-----  1 s467937 studs  22 30 сент. 08:48 electabuzz
+-rw-r--r--  1 s467937 studs  74 30 сент. 08:48 electabuzzcleffa
+dr-xrwx--x  2 s467937 studs   2 30 сент. 08:48 glaceon
+-rw-rw----  1 s467937 studs 228 30 сент. 08:48 machoke
+d-wx-wxr-x  2 s467937 studs   2 30 сент. 08:48 silcoon
+
+./mamoswine3/combusken:
+total 0
+ls: ./mamoswine3/combusken: Permission denied
+
+./mamoswine3/glaceon:
+total 0
+
+./mamoswine3/silcoon:
+total 0
+ls: ./mamoswine3/silcoon: Permission denied
+
+./scizor7:
+total 2
+dr-xr-x---  2 s467937 studs  2 30 сент. 08:48 ducklett
+----r--rw-  1 s467937 studs 29 30 сент. 08:48 golurk
+-r--r--r--  2 s467937 studs 35 30 сент. 08:48 golurkfloatzel
+dr-xrwxrw-  2 s467937 studs  2 30 сент. 08:48 kadabra
+
+./scizor7/ducklett:
+total 0
+
+./scizor7/kadabra:
+total 0

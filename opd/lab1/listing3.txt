@@ -1,0 +1,38 @@
+total 15
+-rw--w----  1 s467937 studs  74 30 сент. 08:58 cleffa4
+lrwxr-xr-x  1 s467937 studs  10 30 сент. 08:58 Copy_16 -> hitmonlee9
+-rw-r--r--  1 s467937 studs 166 30 сент. 08:58 deerling6_67
+-r--r--r--  1 s467937 studs  35 30 сент. 08:58 floatzel7
+drwx-wxrwx  5 s467937 studs   7 30 сент. 08:58 mamoswine3
+dr-x-w-r--  4 s467937 studs   5 30 сент. 08:58 scizor7
+
+./mamoswine3:
+total 7
+d-wx--x--x  2 s467937 studs   3 30 сент. 08:58 combusken
+-rw-r--r--  1 s467937 studs  74 30 сент. 08:58 electabuzzcleffa
+dr-xrwx--x  2 s467937 studs   2 30 сент. 08:58 glaceon
+-rw-rw----  1 s467937 studs 228 30 сент. 08:58 machoke
+d-wx-wxr-x  2 s467937 studs   2 30 сент. 08:58 silcoon
+
+./mamoswine3/combusken:
+total 0
+ls: ./mamoswine3/combusken: Permission denied
+
+./mamoswine3/glaceon:
+total 0
+
+./mamoswine3/silcoon:
+total 0
+ls: ./mamoswine3/silcoon: Permission denied
+
+./scizor7:
+total 2
+dr-xr-x---  2 s467937 studs  2 30 сент. 08:58 ducklett
+----r--rw-  1 s467937 studs 29 30 сент. 08:58 golurk
+dr-xrwxrw-  2 s467937 studs  2 30 сент. 08:58 kadabra
+
+./scizor7/ducklett:
+total 0
+
+./scizor7/kadabra:
+total 0

@@ -1,0 +1,39 @@
+cleffa4: 0100644 [-rw-r--r-- ] -> 0100620 [-rw--w---- ]
+deerling6: 0100644 [-rw-r--r-- ] -> 0100620 [-rw--w---- ]
+floatzel7: 0100644 [-rw-r--r-- ] -> 0100444 [-r--r--r-- ]
+hitmonlee9: 040755 [drwxr-xr-x ] -> 040577 [dr-xrwxrwx ]
+mamoswine: 040755 [drwxr-xr-x ] -> 040551 [dr-xr-x--x ]
+ferrothron: 0100644 [-rw-r--r-- ] -> 0100440 [-r--r----- ]
+espeon: 0100644 [-rw-r--r-- ] -> 0100660 [-rw-rw---- ]
+snivy: 040755 [drwxr-xr-x ] -> 040751 [drwxr-x--x ]
+leavanny: 0100644 [-rw-r--r-- ] -> 0100604 [-rw----r-- ]
+budew: 040755 [drwxr-xr-x ] -> 040355 [d-wxr-xr-x ]
+mamoswine3: 040755 [drwxr-xr-x ] -> 040737 [drwx-wxrwx ]
+glaceon: 040755 [drwxr-xr-x ] -> 040571 [dr-xrwx--x ]
+silcoon: 040755 [drwxr-xr-x ] -> 040335 [d-wx-wxr-x ]
+machoke: 0100644 [-rw-r--r-- ] -> 0100660 [-rw-rw---- ]
+electabuzz: 0100644 [-rw-r--r-- ] -> 0100640 [-rw-r----- ]
+combusken: 040755 [drwxr-xr-x ] -> 040311 [d-wx--x--x ]
+scizor7: 040755 [drwxr-xr-x ] -> 040524 [dr-x-w-r-- ]
+ducklett: 040755 [drwxr-xr-x ] -> 040550 [dr-xr-x--- ]
+kadabra: 040755 [drwxr-xr-x ] -> 040576 [dr-xrwxrw- ]
+golurk: 0100644 [-rw-r--r-- ] -> 0100046 [----r--rw- ]
+find: lab0/mamoswine3/combusken: Permission denied
+find: lab0/mamoswine3/silcoon: Permission denied
+find: lab0/hitmonlee9/budew: Permission denied
+find: lab0/mamoswine3/combusken: Permission denied
+find: lab0/mamoswine3/silcoon: Permission denied
+find: lab0/hitmonlee9/budew: Permission denied
+-rw-rw----  1 s467937 studs 228 30 сент. 08:58 lab0/mamoswine3/machoke
+-rw-r--r--  1 s467937 studs 166 30 сент. 08:58 lab0/deerling6_67
+-r--r-----  1 s467937 studs 144 30 сент. 08:58 lab0/hitmonlee9/ferrothron
+-rw-rw----  1 s467937 studs 137 30 сент. 08:58 lab0/hitmonlee9/espeon
+Hand Ice Punch Knock Off Low Kick Magic Coat Mega Kick Mega Punch
+-rw--w----  1 s467937 studs 74 30 сент. 08:58 lab0/cleffa4
+-rw----r--  1 s467937 studs 34 30 сент. 08:58 lab0/hitmonlee9/leavanny
+-rw-r-----  1 s467937 studs 22 30 сент. 08:58 lab0/mamoswine3/electabuzz
+find: lab0/mamoswine3/combusken: Permission denied
+find: lab0/mamoswine3/silcoon: Permission denied
+find: lab0/hitmonlee9/budew: Permission denied
+-rw-r-----  1 s467937 studs 22 30 сент. 08:58 lab0/mamoswine3/electabuzz
+-rw-r--r--  1 s467937 studs 74 30 сент. 08:58 lab0/mamoswine3/electabuzzcleffa
