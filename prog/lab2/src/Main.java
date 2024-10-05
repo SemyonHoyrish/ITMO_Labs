@@ -4,10 +4,18 @@ import ru.ifmo.se.pokemon.Pokemon;
 public class Main {
     public static void main(String[] args) {
         Battle b = new Battle();
-        Pokemon p1 = new Pokemon("Чужой", 1);
-        Pokemon p2 = new Pokemon("Хищник", 1);
-        b.addAlly(p1);
-        b.addFoe(p2);
+        Pokemon a1 = new Happiny("h", 10);
+        Pokemon a2 = new Chansey("c", 10);
+        Pokemon a3 = new Blissey("b", 10);
+        Pokemon f1 = new Farfetchd("f", 10);
+        Pokemon f2 = new Nincada("n", 10);
+        Pokemon f3 = new Shedinja("s", 10);
+        b.addAlly(a1);
+        b.addAlly(a2);
+        b.addAlly(a3);
+        b.addFoe(f1);
+        b.addFoe(f2);
+        b.addFoe(f3);
         b.go();
     }
 }
