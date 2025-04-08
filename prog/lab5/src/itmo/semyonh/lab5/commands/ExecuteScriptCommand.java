@@ -16,12 +16,11 @@ public class ExecuteScriptCommand implements Command {
     private ConsoleReader reader;
     private CommandManager commandManager;
 
-    private ArrayDeque<String> scriptsInCall;
+    private static ArrayDeque<String> scriptsInCall = new ArrayDeque<>();
 
     public ExecuteScriptCommand(ConsoleReader reader, CommandManager commandManager) {
         this.reader = reader;
         this.commandManager = commandManager;
-        scriptsInCall = new ArrayDeque<>();
     }
 
     @Override

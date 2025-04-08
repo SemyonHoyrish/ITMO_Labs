@@ -126,5 +126,13 @@ public class CollectionManager {
         Gson gson = new Gson();
         Type type = new TypeToken<LinkedHashSet<StudyGroup>>() {}.getType();
         data = gson.fromJson(reader, type);
+
+        int id = 0;
+        for (StudyGroup g : data) {
+            if (g.getId() > id) {
+                id = g.getId();
+            }
+        }
+        StudyGroup.setBaseID(id + 1);
     }
 }

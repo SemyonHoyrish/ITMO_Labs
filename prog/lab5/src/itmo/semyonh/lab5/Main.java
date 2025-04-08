@@ -5,7 +5,7 @@ import itmo.semyonh.lab5.helpers.ConsoleReader;
 
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-//TODO:ID
+
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         CollectionManager collectionManager = new CollectionManager();

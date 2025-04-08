@@ -5,6 +5,9 @@ package itmo.semyonh.lab5.types;
  */
 public class StudyGroup implements Comparable<StudyGroup> {
     private static Integer nextID = 1;
+    public static void setBaseID(int id) {
+        nextID = id;
+    }
 
     private Integer id; //Поле не может быть null, Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
