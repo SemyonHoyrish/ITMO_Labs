@@ -6,6 +6,9 @@ import types.StudyGroup;
 import java.util.LinkedHashSet;
 
 
+/**
+ * AddCommand (add) reads StudyGroup from the reader and adds it to collection.
+ */
 public class AddCommand implements Command {
     private ConsoleReader reader;
 

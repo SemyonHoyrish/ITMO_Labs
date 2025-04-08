@@ -2,9 +2,8 @@ import commands.*;
 import helpers.ConsoleReader;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Scanner;
-
+//TODO:ID
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         CollectionManager collectionManager = new CollectionManager();
@@ -13,11 +12,11 @@ public class Main {
         String filename = System.getenv("DATA_FILENAME");
         if (filename != null && !filename.isEmpty()) {
             collectionManager.setFilename(filename);
-            try {
-                collectionManager.readFile();
-            } catch (FileNotFoundException e) {
-                System.out.println("File '" + filename + "' was not found.");
-            }
+        }
+        try {
+            collectionManager.readFile();
+        } catch (FileNotFoundException e) {
+            System.out.println("File '" + filename + "' was not found.");
         }
 
 

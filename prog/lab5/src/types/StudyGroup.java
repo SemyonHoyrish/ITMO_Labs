@@ -1,5 +1,8 @@
 package types;
 
+/**
+ * Represent data of StudyGroup type.
+ */
 public class StudyGroup implements Comparable<StudyGroup> {
     private static Integer nextID = 1;
 
@@ -26,6 +29,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return name;
     }
 
+    /**
+     * Sets value that is not null and not empty
+     *
+     * @param name value
+     */
     public void setName(String name) {
         if (name != null && !name.isEmpty()) {
             this.name = name;
@@ -38,6 +46,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return coordinates;
     }
 
+    /**
+     * Sets value that is not null
+     *
+     * @param coordinates value
+     */
     public void setCoordinates(Coordinates coordinates) {
         if (coordinates != null) {
             this.coordinates = coordinates;
@@ -54,6 +67,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return studentsCount;
     }
 
+    /**
+     * Sets value that is greater than 0
+     *
+     * @param studentsCount value
+     */
     public void setStudentsCount(long studentsCount) {
         if (studentsCount > 0) {
             this.studentsCount = studentsCount;
@@ -66,6 +84,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return shouldBeExpelled;
     }
 
+    /**
+     * Sets value that is not null and greater than 0
+     *
+     * @param shouldBeExpelled value
+     */
     public void setShouldBeExpelled(Long shouldBeExpelled) {
         if (shouldBeExpelled != null && shouldBeExpelled > 0) {
             this.shouldBeExpelled = shouldBeExpelled;
@@ -78,6 +101,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return formOfEducation;
     }
 
+    /**
+     * Sets value that is not null
+     *
+     * @param formOfEducation value
+     */
     public void setFormOfEducation(FormOfEducation formOfEducation) {
         if (formOfEducation != null) {
             this.formOfEducation = formOfEducation;
@@ -90,6 +118,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return semesterEnum;
     }
 
+    /**
+     * Sets value that is not null
+     *
+     * @param semesterEnum value
+     */
     public void setSemester(Semester semesterEnum) {
         if (semesterEnum != null) {
             this.semesterEnum = semesterEnum;
@@ -102,6 +135,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         return groupAdmin;
     }
 
+    /**
+     * Sets value that is not null
+     *
+     * @param groupAdmin value
+     */
     public void setGroupAdmin(Person groupAdmin) {
         if (groupAdmin != null) {
             this.groupAdmin = groupAdmin;
@@ -110,6 +148,11 @@ public class StudyGroup implements Comparable<StudyGroup> {
         }
     }
 
+    /**
+     * String representation of the data.
+     *
+     * @return String representation
+     */
     @Override
     public String toString() {
         return "StudyGroup :: "
@@ -124,6 +167,12 @@ public class StudyGroup implements Comparable<StudyGroup> {
                 + groupAdmin + " ;";
     }
 
+    /**
+     * Compares objects based on creationDate
+     *
+     * @param o the object to be compared.
+     * @return value as required for Comparable interface
+     */
     @Override
     public int compareTo(StudyGroup o) {
         return creationDate.compareTo(o.creationDate);

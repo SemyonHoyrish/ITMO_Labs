@@ -3,9 +3,11 @@ package commands;
 import types.StudyGroup;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 
+/**
+ * MaxByCoordsCommand (max_by_coordinates) prints any collection item that has maximal coordinates value.
+ */
 public class MaxByCoordsCommand implements Command {
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {

@@ -2,24 +2,48 @@ package helpers;
 
 import types.*;
 
-import java.io.InputStream;
 import java.util.Scanner;
 
+
+/**
+ * Utility class to read all kinds of values from user input and
+ * parse them to corresponding types.
+ */
 public class ConsoleReader {
     private Scanner scanner;
 
+    /**
+     * Default constructor, creates a Scanner for stdin.
+     */
     public ConsoleReader() {
         scanner = new Scanner(System.in);
     }
 
+    /**
+     * Sets a different scanner to use for reading values.
+     *
+     * @param scanner - Scanner to use
+     */
     public void setScanner(Scanner scanner) {
         this.scanner = scanner;
     }
 
+    /**
+     * Returns currently set scanner
+     *
+     * @return current Scanner
+     */
     public Scanner getScanner() {
         return scanner;
     }
 
+    /**
+     * Reads a string that is not null and not empty.
+     * Repeat attempts until will receive a correct input,
+     *
+     * @param prefix - name for input hint
+     * @return not null not empty string
+     */
     public String readString(String prefix) {
         String s = "";
 
@@ -31,6 +55,14 @@ public class ConsoleReader {
         return s;
     }
 
+    /**
+     * Reads an integer [from; to]
+     *
+     * @param prefix - name for input hint
+     * @param from - minimal accepted value
+     * @param to - maximal accepted value
+     * @return int which is   >= `from` && <= `to`
+     */
     public int readInt(String prefix, int from, int to) {
         while (true) {
             System.out.println("Enter value for '" + prefix + "'. Value should not be in range '" + from + "' to '" + to + "'");
@@ -44,6 +76,14 @@ public class ConsoleReader {
         }
     }
 
+    /**
+     * Reads a long value [from; to]
+     *
+     * @param prefix - name for input hint
+     * @param from - minimal accepted value
+     * @param to - maximal accepted value
+     * @return long which is   >= `from` && <= `to`
+     */
     public long readLong(String prefix, long from, long to) {
         while (true) {
             System.out.println("Enter value for '" + prefix + "'. Value should not be in range '" + from + "' to '" + to + "'");
@@ -57,6 +97,14 @@ public class ConsoleReader {
         }
     }
 
+    /**
+     * Reads a float value [from; to]
+     *
+     * @param prefix - name for input hint
+     * @param from - minimal accepted value
+     * @param to - maximal accepted value
+     * @return float which is   >= `from` && <= `to`
+     */
     public float readFloat(String prefix, float from, float to) {
         while (true) {
             System.out.println("Enter value for '" + prefix + "'. Value should not be in range '" + from + "' to '" + to + "'");
@@ -70,6 +118,14 @@ public class ConsoleReader {
         }
     }
 
+    /**
+     * Reads a double value [from; to]
+     *
+     * @param prefix - name for input hint
+     * @param from - minimal accepted value
+     * @param to - maximal accepted value
+     * @return double which is   >= `from` && <= `to`
+     */
     public double readDouble(String prefix, double from, double to) {
         while (true) {
             System.out.println("Enter value for '" + prefix + "'. Value should not be in range '" + from + "' to '" + to + "'");
@@ -83,6 +139,12 @@ public class ConsoleReader {
         }
     }
 
+    /**
+     * Reads a StudyGroup recursively filling all the fields (that is not auto generated)
+     * asking user (or any input stream set in Scanner) for the input.
+     *
+     * @return StudyGroup, not null, filled with values.
+     */
     public StudyGroup readStudyGroup() {
         StudyGroup studyGroup = new StudyGroup();
 
@@ -97,6 +159,12 @@ public class ConsoleReader {
         return studyGroup;
     }
 
+    /**
+     * Reads coordinate object
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @return Coordinates objects, not null, with values.
+     */
     public Coordinates readCoordinates(String prefix) {
         Coordinates coordinates = new Coordinates();
 
@@ -106,6 +174,12 @@ public class ConsoleReader {
         return coordinates;
     }
 
+    /**
+     * Reads readFormOfEducation enum value
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @return FormOfEducation enum value
+     */
     public FormOfEducation readFormOfEducation(String prefix) {
         var values = FormOfEducation.values();
 
@@ -124,6 +198,12 @@ public class ConsoleReader {
         return FormOfEducation.valueOf(values[selected].name());
     }
 
+    /**
+     * Reads Semester enum value
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @return Semester enum value
+     */
     public Semester readSemester(String prefix) {
         var values = Semester.values();
 
@@ -142,6 +222,12 @@ public class ConsoleReader {
         return Semester.valueOf(values[selected].name());
     }
 
+    /**
+     * Reads person object
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @return Person objects, not null, with values.
+     */
     public Person readPerson(String prefix) {
         Person p = new Person();
 
@@ -154,6 +240,13 @@ public class ConsoleReader {
         return p;
     }
 
+    /**
+     * Reads Color enum value, possibility of a `null` value is determined by `notNull` parameter.
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @param notNull - if set return value cannot be null, can be otherwise.
+     * @return Color enum value or null.
+     */
     public Color readColor(String prefix, boolean notNull) {
         var values = Color.values();
 
@@ -190,6 +283,12 @@ public class ConsoleReader {
         return Color.valueOf(values[intSelected].name());
     }
 
+    /**
+     * Reads Country enum value
+     *
+     * @param prefix - prefix to show the parent object in the path inside the user hint.
+     * @return Country enum value
+     */
     public Country readCountry(String prefix) {
         var values = Country.values();
 

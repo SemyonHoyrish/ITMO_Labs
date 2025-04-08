@@ -4,6 +4,10 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
+
+/**
+ * ShowCommand (show) prints all elements of the collection.
+ */
 public class ShowCommand implements Command {
 
     @Override

@@ -6,6 +6,11 @@ import types.StudyGroup;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
+
+/**
+ * AddIfMinCommand (add_if_min) reads StudyGroup from the reader
+ * and adds it to the collection in case it less that minimal instance in the collection.
+ */
 public class AddIfMinCommand implements Command {
     private ConsoleReader reader;
 

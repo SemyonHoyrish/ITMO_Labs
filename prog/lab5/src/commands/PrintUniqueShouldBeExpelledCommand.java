@@ -5,6 +5,11 @@ import types.StudyGroup;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
+
+/**
+ * PrintUniqueShouldBeExpelledCommand (print_unique_should_be_expelled)
+ * prints all unique values of shouldBeExpelled field of all items in the collection.
+ */
 public class PrintUniqueShouldBeExpelledCommand implements Command {
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {

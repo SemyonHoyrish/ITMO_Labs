@@ -4,6 +4,10 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
+
+/**
+ * ExitCommand (exit) exits the program
+ */
 public class ExitCommand implements Command {
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {

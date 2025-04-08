@@ -5,6 +5,9 @@ import types.StudyGroup;
 import java.util.Date;
 import java.util.LinkedHashSet;
 
+/**
+ * InfoCommand (info) prints information about collection.
+ */
 public class InfoCommand implements Command {
     private Date collectionInitDate;
 

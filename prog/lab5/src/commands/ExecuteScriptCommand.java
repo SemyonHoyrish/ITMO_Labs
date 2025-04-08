@@ -7,6 +7,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+/**
+ * ExecuteScriptCommand (execute_script file_name) reads content of the script file and
+ * provide it as an input for the command parsing, and executes all commands.
+ */
 public class ExecuteScriptCommand implements Command {
     private String scriptName;
     private ConsoleReader reader;

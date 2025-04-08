@@ -4,6 +4,9 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
+/**
+ * ClearCommand (clear) clears the collection
+ */
 public class ClearCommand implements Command {
 
     @Override

@@ -5,6 +5,10 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
+/**
+ * RemoveGreaterCommand (remove_greater) reads StudyGroup from the reader
+ * and removes all elements from collection, which are greater that read one.
+ */
 public class RemoveGreaterCommand implements Command {
     private ConsoleReader reader;
 

@@ -5,6 +5,11 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
+/**
+ * UpdateCommand (update id) reads StudyGroup from the reader,
+ * and replaces item with provided id in the collection with a new one.
+ * If there are no such id, does not mutate the collection.
+ */
 public class UpdateCommand implements Command {
     private int id = 0;
     private ConsoleReader reader;

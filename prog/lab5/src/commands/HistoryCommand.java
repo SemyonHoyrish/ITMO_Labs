@@ -5,6 +5,9 @@ import types.StudyGroup;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+/**
+ * HistoryCommand (history) prints last 7 commands executed.
+ */
 public class HistoryCommand implements Command {
     private List<Command> commandsHistory;
 

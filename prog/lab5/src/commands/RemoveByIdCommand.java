@@ -2,9 +2,13 @@ package commands;
 
 import types.StudyGroup;
 
-import javax.naming.Name;
 import java.util.LinkedHashSet;
 
+
+/**
+ * RemoveByIdCommand (remove_by_id id) removes collection entry that has id that was provided as an argument,
+ * if there are no such entry, does noting.
+ */
 public class RemoveByIdCommand implements Command {
     private int id = 0;
 

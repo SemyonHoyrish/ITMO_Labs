@@ -1,5 +1,4 @@
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import commands.Command;
 import types.StudyGroup;
 import com.google.gson.reflect.TypeToken;
@@ -8,6 +7,12 @@ import java.lang.reflect.Type;
 import java.io.*;
 import java.util.*;
 
+
+/**
+ * The CollectionManager class is a central entity that controls the collection `data`,
+ * additional data related to that (like `initData`),
+ * and handles command execution, that affects underlying data or manager itself (data load/store to a file).
+ */
 public class CollectionManager {
 
     private LinkedHashSet<StudyGroup> data;
@@ -16,12 +21,21 @@ public class CollectionManager {
     private String filename = "test.json";
 
 
+    /**
+     * A default constructor to initialize components of the class.
+     */
     public CollectionManager() {
         data = new LinkedHashSet<>();
         history = new ArrayList<>();
         initDate = new Date();
     }
 
+    /**
+     * Executes commands (@see Command) on `data`,
+     * also handles special cases (`save` command).
+     *
+     * @param c Command to execute
+     */
     public void executeCommand(Command c) {
         history.add(c);
 
@@ -41,22 +55,50 @@ public class CollectionManager {
         }
     }
 
+    /**
+     * Returns date of underlying collection initialization,
+     * does not designed to be changed outside.
+     *
+     * @return Date object of collection initialization time.
+     */
     public Date getInitDate() {
         return initDate;
     }
 
+    /**
+     * Returns list of commands history.
+     * Currently unlimited (may change).
+     *
+     * @return List of Command in order of execution.
+     */
     public List<Command> getHistory() {
         return history;
     }
 
+    /**
+     * Returns filename of the file to write and read data of current collection.
+     *
+     * @return filename of data file.
+     */
     public String getFilename() {
         return filename;
     }
 
+    /**
+     * Sets filename of the file, that is used to write and read data of current collection.
+     *
+     * @param filename
+     */
     public void setFilename(String filename) {
         this.filename = filename;
     }
 
+
+    /**
+     * Actually serializes `data` into json and write in file.
+     *
+     * @throws IOException on I/O write error
+     */
     public void writeFile() throws IOException {
         OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filename));
 
@@ -71,6 +113,11 @@ public class CollectionManager {
         writer.close();
     }
 
+    /**
+     * Reads json stored data from file and deserializes it
+     *
+     * @throws FileNotFoundException if file was not found
+     */
     public void readFile() throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(filename));
 

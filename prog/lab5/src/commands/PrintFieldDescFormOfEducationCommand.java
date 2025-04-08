@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+/**
+ * PrintFieldDescFormOfEducationCommand (print_field_descending_form_of_education)
+ * prints formOfEducation of all collection entries in descending order.
+ */
 public class PrintFieldDescFormOfEducationCommand implements Command {
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {
