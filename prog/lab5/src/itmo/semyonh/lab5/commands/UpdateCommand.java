@@ -6,9 +6,9 @@ import itmo.semyonh.lab5.types.StudyGroup;
 import java.util.LinkedHashSet;
 
 /**
- * UpdateCommand (update id) reads StudyGroup from the reader,
- * and replaces item with provided id in the collection with a new one.
- * If there are no such id, does not mutate the collection.
+ * UpdateCommand (update id) finds entry with given id,
+ * if found reads StudyGroup from the reader,
+ * and replaces item with provided one.
  */
 public class UpdateCommand implements Command {
     private int id = 0;
@@ -25,12 +25,17 @@ public class UpdateCommand implements Command {
             return;
         }
 
+        StudyGroup found = null;
         for (StudyGroup studyGroup : collection) {
             if (studyGroup.getId() == id) {
-                StudyGroup newGroup = reader.readStudyGroup();
-                collection.remove(studyGroup);
-                collection.add(newGroup);
+                found = studyGroup;
             }
+        }
+
+        if (found != null) {
+            StudyGroup newGroup = reader.readStudyGroup();
+            collection.remove(found);
+            collection.add(newGroup);
         }
     }
 
