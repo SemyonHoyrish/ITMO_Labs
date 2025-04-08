@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 /**
  * Utility class to read all kinds of values from user input and
- * parse them to corresponding itmo.semyonh.lab5.types.
+ * parse them to corresponding types.
  */
 public class ConsoleReader {
     private Scanner scanner;

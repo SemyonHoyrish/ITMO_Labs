@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * CommandManager handles registration of itmo.semyonh.lab5.commands,
+ * CommandManager handles registration of commands,
  * their parsing and inline arguments parsing.
  */
 public class CommandManager {
@@ -27,7 +27,7 @@ public class CommandManager {
     }
 
     /**
-     * Gets map of registered itmo.semyonh.lab5.commands (command_name, command)
+     * Gets map of registered commands (command_name, command)
      *
      * @return HashMap of command name and command object.
      */

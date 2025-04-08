@@ -5,7 +5,7 @@ import itmo.semyonh.lab5.types.StudyGroup;
 import java.util.LinkedHashSet;
 
 /**
- * HelpCommand (help) prints the description of all registered itmo.semyonh.lab5.commands.
+ * HelpCommand (help) prints the description of all registered commands.
  */
 public class HelpCommand implements Command {
     private CommandManager manager;

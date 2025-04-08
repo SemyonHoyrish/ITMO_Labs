@@ -11,7 +11,7 @@ import java.util.*;
 
 
 /**
- * The itmo.semyonh.lab5.CollectionManager class is a central entity that controls the collection `data`,
+ * The CollectionManager class is a central entity that controls the collection `data`,
  * additional data related to that (like `initData`),
  * and handles command execution, that affects underlying data or manager itself (data load/store to a file).
  */
@@ -33,7 +33,7 @@ public class CollectionManager {
     }
 
     /**
-     * Executes itmo.semyonh.lab5.commands (@see Command) on `data`,
+     * Executes commands on `data`,
      * also handles special cases (`save` command).
      *
      * @param c Command to execute
@@ -68,7 +68,7 @@ public class CollectionManager {
     }
 
     /**
-     * Returns list of itmo.semyonh.lab5.commands history.
+     * Returns list of commands history.
      * Currently unlimited (may change).
      *
      * @return List of Command in order of execution.

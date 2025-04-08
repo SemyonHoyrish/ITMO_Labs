@@ -6,13 +6,13 @@ import java.util.LinkedHashSet;
 
 
 /**
- * Command interface describes command being used for manipulate itmo.semyonh.lab5.CollectionManager
+ * Command interface describes command being used for manipulate CollectionManager
  */
 public interface Command {
     /**
      * Method that actually manipulate the collection (if needed)
      *
-     * @param collection - collection provided by itmo.semyonh.lab5.CollectionManager
+     * @param collection - collection provided by CollectionManager
      */
     void execute(LinkedHashSet<StudyGroup> collection);
 
