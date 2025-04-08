@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"itmo.semyonh.lab5"},{"l":"itmo.semyonh.lab5.commands"}];updateSearchResults();
