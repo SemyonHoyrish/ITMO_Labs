@@ -2,6 +2,7 @@ package helpers;
 
 import types.*;
 
+import java.io.InputStream;
 import java.util.Scanner;
 
 public class ConsoleReader {
@@ -9,6 +10,14 @@ public class ConsoleReader {
 
     public ConsoleReader() {
         scanner = new Scanner(System.in);
+    }
+
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public Scanner getScanner() {
+        return scanner;
     }
 
     public String readString(String prefix) {

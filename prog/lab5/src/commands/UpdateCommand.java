@@ -4,7 +4,6 @@ import helpers.ConsoleReader;
 import types.StudyGroup;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 
 public class UpdateCommand implements Command {
     private int id = 0;
@@ -47,5 +46,10 @@ public class UpdateCommand implements Command {
     @Override
     public String getName() {
         return "update";
+    }
+
+    @Override
+    public String getDescription() {
+        return "update id {element} : обновить значение элемента коллекции, id которого равен заданному";
     }
 }

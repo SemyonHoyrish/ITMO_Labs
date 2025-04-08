@@ -32,4 +32,9 @@ public class PrintFieldDescFormOfEducationCommand implements Command {
     public String getName() {
         return "print_field_descending_form_of_education";
     }
+
+    @Override
+    public String getDescription() {
+        return "print_field_descending_form_of_education : вывести значения поля formOfEducation всех элементов в порядке убывания";
+    }
 }

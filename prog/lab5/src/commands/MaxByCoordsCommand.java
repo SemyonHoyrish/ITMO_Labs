@@ -23,4 +23,9 @@ public class MaxByCoordsCommand implements Command {
     public String getName() {
         return "max_by_coordinates";
     }
+
+    @Override
+    public String getDescription() {
+        return "max_by_coordinates : вывести любой объект из коллекции, значение поля coordinates которого является максимальным";
+    }
 }

@@ -14,6 +14,10 @@ public class CommandManager {
         commands.put(command.getName(), command);
     }
 
+    public HashMap<String, Command> getCommands() {
+        return commands;
+    }
+
     public Command parseCommand(String input) {
         var parts = input.split(" ");
         for (var c : commands.keySet()) {

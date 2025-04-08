@@ -4,11 +4,10 @@ import types.StudyGroup;
 
 import java.util.LinkedHashSet;
 
-public class ClearCommand implements Command {
-
+public class ExitCommand implements Command {
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {
-        collection.clear();
+        System.exit(0);
     }
 
     @Override
@@ -18,11 +17,11 @@ public class ClearCommand implements Command {
 
     @Override
     public String getName() {
-        return "clear";
+        return "exit";
     }
 
     @Override
     public String getDescription() {
-        return "clear : очистить коллекцию";
+        return "exit : завершить программу (без сохранения в файл)";
     }
 }

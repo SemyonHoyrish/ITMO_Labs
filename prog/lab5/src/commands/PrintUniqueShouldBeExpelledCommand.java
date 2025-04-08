@@ -28,4 +28,9 @@ public class PrintUniqueShouldBeExpelledCommand implements Command {
     public String getName() {
         return "print_unique_should_be_expelled";
     }
+
+    @Override
+    public String getDescription() {
+        return "print_unique_should_be_expelled : вывести уникальные значения поля shouldBeExpelled всех элементов в коллекции";
+    }
 }

@@ -28,4 +28,9 @@ public class HistoryCommand implements Command {
     public String getName() {
         return "history";
     }
+
+    @Override
+    public String getDescription() {
+        return "history : вывести последние 7 команд (без их аргументов)";
+    }
 }

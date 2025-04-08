@@ -10,4 +10,5 @@ public interface Command {
     void execute(LinkedHashSet<StudyGroup> collection);
     Command with(String[] args);
     String getName();
+    String getDescription();
 }

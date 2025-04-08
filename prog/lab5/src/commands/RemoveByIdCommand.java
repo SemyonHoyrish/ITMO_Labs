@@ -36,4 +36,9 @@ public class RemoveByIdCommand implements Command {
     public String getName() {
         return "remove_by_id";
     }
+
+    @Override
+    public String getDescription() {
+        return "remove_by_id id : удалить элемент из коллекции по его id";
+    }
 }

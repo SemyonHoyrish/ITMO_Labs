@@ -5,10 +5,17 @@ import types.StudyGroup;
 import java.util.LinkedHashSet;
 
 public class HelpCommand implements Command {
+    private CommandManager manager;
+
+    public HelpCommand(CommandManager manager) {
+        this.manager = manager;
+    }
 
     @Override
     public void execute(LinkedHashSet<StudyGroup> collection) {
-        // TODO
+        for (var cmd : manager.getCommands().values()) {
+            System.out.println(cmd.getDescription());
+        }
     }
 
     @Override
@@ -19,5 +26,10 @@ public class HelpCommand implements Command {
     @Override
     public String getName() {
         return "help";
+    }
+
+    @Override
+    public String getDescription() {
+        return "help : вывести справку по доступным командам";
     }
 }
