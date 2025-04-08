@@ -1,0 +1,33 @@
+package commands;
+
+import types.StudyGroup;
+
+import java.util.Date;
+import java.util.LinkedHashSet;
+
+public class InfoCommand implements Command {
+    private Date collectionInitDate;
+
+    public InfoCommand(Date collectionInitDate) {
+        this.collectionInitDate = collectionInitDate;
+    }
+
+    @Override
+    public void execute(LinkedHashSet<StudyGroup> collection) {
+        System.out.println(
+                "class: " + collection.getClass() + "\n"
+                        + "init date: " + collectionInitDate + "\n"
+                        + "size: " + collection.size() + "\n"
+                        + "hash: " + collection.hashCode());
+    }
+
+    @Override
+    public Command with(String[] args) {
+        return this;
+    }
+
+    @Override
+    public String getName() {
+        return "info";
+    }
+}
