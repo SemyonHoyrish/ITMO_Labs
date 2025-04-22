@@ -12,16 +12,25 @@ import java.util.LinkedHashSet;
  */
 public class PrintUniqueShouldBeExpelledCommand implements Command {
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         HashSet<Long> s = new HashSet<>();
 
         for (StudyGroup studyGroup : collection) {
             s.add(studyGroup.getShouldBeExpelled());
         }
 
+        StringBuilder result = new StringBuilder();
         for (var ss : s) {
-            System.out.println(ss);
+            result.append(ss);
+            result.append("\n");
         }
+
+        return new CommandResult(CommandResultType.PlainText, result.toString());
     }
 
     @Override

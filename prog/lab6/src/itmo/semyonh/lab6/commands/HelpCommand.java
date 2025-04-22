@@ -8,17 +8,24 @@ import java.util.LinkedHashSet;
  * HelpCommand (help) prints the description of all registered commands.
  */
 public class HelpCommand implements Command {
-    private CommandManager manager;
+    private transient CommandManager manager;
 
     public HelpCommand(CommandManager manager) {
         this.manager = manager;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
         for (var cmd : manager.getCommands().values()) {
             System.out.println(cmd.getDescription());
         }
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        // No point of this on the server
+
+        return null;
     }
 
     @Override

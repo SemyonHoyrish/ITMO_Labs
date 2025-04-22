@@ -10,10 +10,15 @@ import java.util.LinkedHashSet;
  */
 public class MaxByCoordsCommand implements Command {
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         var r = Collections.max(collection, (a, b) -> a.getCoordinates().compareTo(b.getCoordinates()));
 
-        System.out.println(r);
+        return new CommandResult(CommandResultType.Item, r);
     }
 
     @Override

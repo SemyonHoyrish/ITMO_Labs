@@ -9,19 +9,26 @@ import java.util.LinkedHashSet;
  * InfoCommand (info) prints information about collection.
  */
 public class InfoCommand implements Command {
-    private Date collectionInitDate;
+    private static Date collectionInitDate;
 
     public InfoCommand(Date collectionInitDate) {
-        this.collectionInitDate = collectionInitDate;
+        InfoCommand.collectionInitDate = collectionInitDate;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
-        System.out.println(
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        String result =
                 "class: " + collection.getClass() + "\n"
                         + "init date: " + collectionInitDate + "\n"
                         + "size: " + collection.size() + "\n"
-                        + "hash: " + collection.hashCode());
+                        + "hash: " + collection.hashCode();
+
+        return new CommandResult(CommandResultType.PlainText, result);
     }
 
     @Override

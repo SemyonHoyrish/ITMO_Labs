@@ -2,6 +2,7 @@ package itmo.semyonh.lab6;
 
 import com.google.gson.Gson;
 import itmo.semyonh.lab6.commands.Command;
+import itmo.semyonh.lab6.commands.CommandResult;
 import itmo.semyonh.lab6.types.StudyGroup;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -38,7 +39,7 @@ public class CollectionManager {
      *
      * @param c Command to execute
      */
-    public void executeCommand(Command c) {
+    public CommandResult executeCommand(Command c) {
         history.add(c);
 
         // handle special itmo.semyonh.lab5.commands
@@ -52,9 +53,10 @@ public class CollectionManager {
                 break;
 
             default:
-                c.execute(data);
-                break;
+                return c.execute(data);
         }
+
+        return null;
     }
 
     /**

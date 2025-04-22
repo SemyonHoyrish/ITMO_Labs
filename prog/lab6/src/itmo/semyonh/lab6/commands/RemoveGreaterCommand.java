@@ -10,17 +10,23 @@ import java.util.LinkedHashSet;
  * and removes all elements from collection, which are greater that read one.
  */
 public class RemoveGreaterCommand implements Command {
-    private ConsoleReader reader;
+    private transient ConsoleReader reader;
+    private StudyGroup group;
 
     public RemoveGreaterCommand(ConsoleReader reader) {
         this.reader = reader;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
-        StudyGroup group = reader.readStudyGroup();
+    public void prepare() {
+        group = reader.readStudyGroup();
+    }
 
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         collection.removeIf( g -> g.compareTo(group) > 0 );
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

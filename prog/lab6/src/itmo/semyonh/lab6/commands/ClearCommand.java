@@ -10,8 +10,15 @@ import java.util.LinkedHashSet;
 public class ClearCommand implements Command {
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         collection.clear();
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

@@ -9,8 +9,13 @@ import java.util.LinkedHashSet;
  */
 public class SaveCommand implements Command {
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
         return;
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        return null;
     }
 
     @Override

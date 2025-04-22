@@ -2,19 +2,23 @@ package itmo.semyonh.lab6.commands;
 
 import itmo.semyonh.lab6.types.StudyGroup;
 
+import java.io.Serializable;
 import java.util.LinkedHashSet;
 
 
 /**
  * Command interface describes command being used for manipulate CollectionManager
  */
-public interface Command {
+public interface Command extends Serializable {
+
+    void prepare();
+
     /**
      * Method that actually manipulate the collection (if needed)
      *
      * @param collection - collection provided by CollectionManager
      */
-    void execute(LinkedHashSet<StudyGroup> collection);
+    CommandResult execute(LinkedHashSet<StudyGroup> collection);
 
     /**
      * Method that return new instance of this Command with specific arguments,

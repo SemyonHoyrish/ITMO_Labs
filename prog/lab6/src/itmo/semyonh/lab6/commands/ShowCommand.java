@@ -11,10 +11,18 @@ import java.util.LinkedHashSet;
 public class ShowCommand implements Command {
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        StringBuilder result = new StringBuilder();
         for (StudyGroup studyGroup : collection) {
-            System.out.println(studyGroup);
+            result.append(studyGroup.toString()).append("\n");
         }
+
+        return new CommandResult(CommandResultType.PlainText, result.toString());
     }
 
     @Override

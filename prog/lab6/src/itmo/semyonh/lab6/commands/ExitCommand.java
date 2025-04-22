@@ -10,8 +10,16 @@ import java.util.LinkedHashSet;
  */
 public class ExitCommand implements Command {
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+        // Exit on client application
         System.exit(0);
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        // Not allowed to be sent to the server
+
+        return null;
     }
 
     @Override

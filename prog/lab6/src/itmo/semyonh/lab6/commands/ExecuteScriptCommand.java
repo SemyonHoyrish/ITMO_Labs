@@ -13,18 +13,20 @@ import java.util.*;
  */
 public class ExecuteScriptCommand implements Command {
     private String scriptName;
-    private ConsoleReader reader;
-    private CommandManager commandManager;
+    private transient ConsoleReader reader;
+    private transient CommandManager commandManager;
+    private List<Command> commandsToExecute;
 
     private static ArrayDeque<String> scriptsInCall = new ArrayDeque<>();
 
     public ExecuteScriptCommand(ConsoleReader reader, CommandManager commandManager) {
         this.reader = reader;
         this.commandManager = commandManager;
+        this.commandsToExecute = new ArrayList<>();
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
         if (scriptName == null || scriptName.isEmpty()) {
             System.out.println(getName() + " command: scriptName cannot be null or empty");
             return;
@@ -55,13 +57,31 @@ public class ExecuteScriptCommand implements Command {
                 System.out.println("'" + cmd_text + "' is not a command");
                 continue;
             }
-            cmd.execute(collection);
+            cmd.prepare();
+            commandsToExecute.add(cmd);
         }
 
         reader.setScanner(prevScanner);
         sc.close();
         var sname = scriptsInCall.removeLast();
         assert(sname.equals(scriptName));
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        List<CommandResult> results = new ArrayList<>();
+
+        for (Command command : commandsToExecute) {
+            var res = command.execute(collection);
+
+            if (res.type() == CommandResultType.ResultList) {
+                results.addAll((ArrayList<CommandResult>)res.result());
+            } else {
+                results.add(res);
+            }
+        }
+
+        return new CommandResult(CommandResultType.ResultList, results);
     }
 
     @Override

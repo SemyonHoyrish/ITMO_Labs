@@ -10,17 +10,24 @@ import java.util.LinkedHashSet;
  * AddCommand (add) reads StudyGroup from the reader and adds it to collection.
  */
 public class AddCommand implements Command {
-    private ConsoleReader reader;
+    private transient ConsoleReader reader;
+    private StudyGroup studyGroup;
 
     public AddCommand(ConsoleReader reader) {
         this.reader = reader;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
-        StudyGroup studyGroup = reader.readStudyGroup();
+    public void prepare() {
+        studyGroup = reader.readStudyGroup();
+    }
 
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        studyGroup.regenerate();
         collection.add(studyGroup);
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

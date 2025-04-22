@@ -9,17 +9,25 @@ import java.util.List;
  * HistoryCommand (history) prints last 7 commands executed.
  */
 public class HistoryCommand implements Command {
-    private List<Command> commandsHistory;
+    private static List<Command> commandsHistory;
 
     public HistoryCommand(List<Command> history) {
         commandsHistory = history;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        StringBuilder result = new StringBuilder();
         for (int i = Math.max(commandsHistory.size() - 7, 0); i < commandsHistory.size(); i++) {
-            System.out.println(commandsHistory.get(i).getName());
+            result.append(commandsHistory.get(i).getName()).append("\n");
         }
+
+        return new CommandResult(CommandResultType.PlainText, result.toString());
     }
 
     @Override

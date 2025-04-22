@@ -13,8 +13,13 @@ import java.util.List;
  */
 public class PrintFieldDescFormOfEducationCommand implements Command {
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
-        List< FormOfEducation> l = new ArrayList<FormOfEducation>();
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        List<FormOfEducation> l = new ArrayList<FormOfEducation>();
 
         for (StudyGroup studyGroup : collection) {
             l.add(studyGroup.getFormOfEducation());
@@ -22,9 +27,13 @@ public class PrintFieldDescFormOfEducationCommand implements Command {
 
         l.sort((a, b) -> -a.compareTo(b));
 
+        StringBuilder result = new StringBuilder();
         for (var f : l) {
-            System.out.println(f);
+            result.append(f);
+            result.append("\n");
         }
+
+        return new CommandResult(CommandResultType.PlainText, result.toString());
     }
 
     @Override

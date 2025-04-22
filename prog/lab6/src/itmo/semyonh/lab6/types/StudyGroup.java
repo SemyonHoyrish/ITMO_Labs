@@ -20,6 +20,10 @@ public class StudyGroup implements Comparable<StudyGroup> {
     private Person groupAdmin; //Поле не может быть null
 
     public StudyGroup() {
+        regenerate();
+    }
+
+    public void regenerate() {
         id =  nextID++;
         creationDate = new java.util.Date();
     }

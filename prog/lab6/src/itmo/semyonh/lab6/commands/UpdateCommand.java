@@ -12,18 +12,25 @@ import java.util.LinkedHashSet;
  */
 public class UpdateCommand implements Command {
     private int id = 0;
-    private ConsoleReader reader;
+    private transient ConsoleReader reader;
+    private StudyGroup newGroup;
 
     public UpdateCommand(ConsoleReader reader) {
         this.reader = reader;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+        newGroup = reader.readStudyGroup();
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         if (id == 0) {
-            System.out.println("Could not call " + getName() + " command without an id arg");
-            return;
+            return new CommandResult(CommandResultType.Failed, "Could not call " + getName() + " command without an id arg");
         }
+
+        newGroup.regenerate();
 
         StudyGroup found = null;
         for (StudyGroup studyGroup : collection) {
@@ -33,10 +40,13 @@ public class UpdateCommand implements Command {
         }
 
         if (found != null) {
-            StudyGroup newGroup = reader.readStudyGroup();
             collection.remove(found);
             collection.add(newGroup);
+        } else {
+            return new CommandResult(CommandResultType.Failed, "Could not find study group with id " + id);
         }
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

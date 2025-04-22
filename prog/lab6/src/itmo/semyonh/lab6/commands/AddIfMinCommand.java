@@ -12,21 +12,28 @@ import java.util.LinkedHashSet;
  * and adds it to the collection in case it less that minimal instance in the collection.
  */
 public class AddIfMinCommand implements Command {
-    private ConsoleReader reader;
+    private transient ConsoleReader reader;
+    private StudyGroup group;
 
     public AddIfMinCommand(ConsoleReader reader) {
         this.reader = reader;
     }
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
-        StudyGroup group = reader.readStudyGroup();
+    public void prepare() {
+        group = reader.readStudyGroup();
+    }
 
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         StudyGroup min = Collections.min(collection);
 
         if (group.compareTo(min) < 0) {
+            group.regenerate();
             collection.add(group);
         }
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

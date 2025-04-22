@@ -13,13 +13,19 @@ public class RemoveByIdCommand implements Command {
     private int id = 0;
 
     @Override
-    public void execute(LinkedHashSet<StudyGroup> collection) {
+    public void prepare() {
+
+    }
+
+    @Override
+    public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
         if (id == 0) {
-            System.out.println("Could not call " + getName() + " command without an id arg");
-            return;
+            return new CommandResult(CommandResultType.Failed, "Could not call " + getName() + " command without an id arg");
         }
 
         collection.removeIf(g -> g.getId() == id);
+
+        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override
