@@ -17,7 +17,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Server {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
     private int port;
     private DatagramSocket socket;
 
@@ -26,6 +31,7 @@ public class Server {
 
 
     public Server(int port) {
+        logger.info("Set server port to " + port);
         this.port = port;
     }
 
@@ -42,11 +48,14 @@ public class Server {
         String filename = System.getenv("DATA_FILENAME");
         if (filename != null && !filename.isEmpty()) {
             collectionManager.setFilename(filename);
+        } else {
+            logger.info("Filename was not specified, using default one");
         }
         try {
             collectionManager.readFile();
         } catch (FileNotFoundException e) {
-            System.out.println("File '" + collectionManager.getFilename() + "' was not found.");
+            logger.warn("File '" + collectionManager.getFilename() + "' was not found.");
+//            System.out.println("File '" + collectionManager.getFilename() + "' was not found.");
         }
 
         ConsoleReader reader = null;
@@ -83,25 +92,32 @@ public class Server {
         var buff = new byte[size];
         var packet = new DatagramPacket(buff, size);
         try {
+            logger.info("Waiting for a packet");
             socket.receive(packet);
         } catch (IOException e) {
-            System.out.println("Cannot receive packet: " + e.getMessage());
+            logger.error("Cannot receive packet: " + e.getMessage());
+//            System.out.println("Cannot receive packet: " + e.getMessage());
         }
         var contentBytes = new byte[packet.getLength()];
         System.arraycopy(packet.getData(), 0, contentBytes, 0, packet.getLength());
         String content = new String(contentBytes);
 
+        logger.info("Deserializing the request");
         Request r = Converter.requestFromJson(content);
 
         var registered = commandManager.getCommands();
         if (!registered.containsKey(r.commandName())) {
-            System.out.println("Unknown command from client: " + r.commandName());
+            logger.info("Unknown command from client: " + r.commandName());
+//            System.out.println("Unknown command from client: " + r.commandName());
             sendResponseUC(r.id(), packet.getAddress(), packet.getPort());
         }
 
+        logger.info("Deserializing the command");
         Command cmd = Converter.commandFromJson(r.commandJson(), registered.get(r.commandName()).getClass());
+        logger.info("Executing command " + cmd.getName());
         var result = collectionManager.executeCommand(cmd);
 
+        logger.info("Constructing response based on command result");
         sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), result);
     }
 
@@ -150,16 +166,18 @@ public class Server {
         var resp = new Response(id, Status.UNKNOWN_COMMAND, ResponseType.None, null);
         send(host, port, resp);
     }
-    
+
     private void send(InetAddress host, int port, Response resp) {
         var json = Converter.responseToJson(resp);
         var bytes = json.getBytes();
 
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, host, port);
         try {
+            logger.info("Sending a packet");
             socket.send(packet);
         } catch (IOException e) {
-            System.out.println("Cannot send packet: " + e.getMessage());
+            logger.error("Cannot send packet: " + e.getMessage());
+//            System.out.println("Cannot send packet: " + e.getMessage());
         }
     }
 
