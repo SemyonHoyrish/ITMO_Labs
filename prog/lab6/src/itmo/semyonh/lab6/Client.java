@@ -96,15 +96,33 @@ public class Client {
                 }
             } else if (!parsedCommands.isEmpty()) {
                 var cmd = parsedCommands.removeFirst();
-                var r = new Request(commandID++, cmd.getName(), Converter.commandToJson(cmd));
-                try {
-                    channel.send(ByteBuffer.wrap(Converter.requestToJson(r).getBytes()), serverAddress);
-                    waitingForResponse.put(commandID-1, cmd);
-                } catch (IOException e) {
-                    System.out.println("Error sending request: " + e.getMessage());
+
+                if (cmd.getClass() == ExecuteScriptCommand.class) {
+                    for (var c : ((ExecuteScriptCommand) cmd).commandsToExecute) {
+                        var rr = new Request(commandID++, c.getName(), Converter.commandToJson(c));
+                        if (send(rr)) {
+                            waitingForResponse.put(commandID-1, c);
+                        }
+                    }
+                } else {
+                    var r = new Request(commandID++, cmd.getName(), Converter.commandToJson(cmd));
+                    if (send(r)) {
+                        waitingForResponse.put(commandID-1, cmd);
+                    }
                 }
+
             }
         }
+    }
+
+    private boolean send(Request r) {
+        try {
+            channel.send(ByteBuffer.wrap(Converter.requestToJson(r).getBytes()), serverAddress);
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error sending request: " + e.getMessage());
+        }
+        return false;
     }
 
     private void displayResponse(ResponseType t, String resp) {

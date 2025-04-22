@@ -66,6 +66,7 @@ public class Server {
         commandManager.registerCommand(new UpdateCommand(reader));
         commandManager.registerCommand(new RemoveByIdCommand());
         commandManager.registerCommand(new ClearCommand());
+        commandManager.registerCommand(new ExecuteScriptCommand(reader, commandManager));
         commandManager.registerCommand(new ExitCommand());
         commandManager.registerCommand(new AddIfMinCommand(reader));
         commandManager.registerCommand(new RemoveGreaterCommand(reader));

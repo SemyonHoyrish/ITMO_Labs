@@ -15,7 +15,7 @@ public class ExecuteScriptCommand implements Command {
     private String scriptName;
     private transient ConsoleReader reader;
     private transient CommandManager commandManager;
-    private List<Command> commandsToExecute;
+    public transient List<Command> commandsToExecute;
 
     private static ArrayDeque<String> scriptsInCall = new ArrayDeque<>();
 
