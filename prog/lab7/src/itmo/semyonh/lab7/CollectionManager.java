@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -23,6 +24,8 @@ public class CollectionManager {
     private List<Command> history;
     private String filename = "test.json";
 
+    private ReentrantLock lock;
+
 
     /**
      * A default constructor to initialize components of the class.
@@ -31,6 +34,7 @@ public class CollectionManager {
         data = new LinkedHashSet<>();
         history = new ArrayList<>();
         initDate = new Date();
+        lock = new ReentrantLock();
     }
 
     /**
@@ -40,9 +44,10 @@ public class CollectionManager {
      * @param c Command to execute
      */
     public CommandResult executeCommand(Command c) {
+        lock.lock();
         history.add(c);
 
-        // handle special itmo.semyonh.lab5.commands
+        // handle special commands
         switch (c.getName()) {
             case "save":
                 try {
@@ -53,9 +58,12 @@ public class CollectionManager {
                 break;
 
             default:
-                return c.execute(data);
+                var res = c.execute(data);
+                lock.unlock();
+                return res;
         }
 
+        lock.unlock();
         return null;
     }
 

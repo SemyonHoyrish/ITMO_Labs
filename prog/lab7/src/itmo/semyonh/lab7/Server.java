@@ -16,6 +16,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +31,34 @@ public class Server {
     private CommandManager commandManager;
     private CollectionManager collectionManager;
 
+    private ExecutorService readPool;
+    private ExecutorService procPool;
+    private ExecutorService sendPool;
+
 
     public Server(int port) {
         logger.info("Set server port to " + port);
         this.port = port;
+
+        String filename = System.getenv("DATA_FILENAME");
+        if (filename != null && !filename.isEmpty()) {
+            collectionManager.setFilename(filename);
+        } else {
+            logger.info("Filename was not specified, using default one");
+        }
+
+        int READ_THREADS = System.getenv("READ_THREADS") != null
+                ? Integer.parseInt(System.getenv("READ_THREADS"))
+                : 10;
+
+        int SEND_THREADS = System.getenv("SEND_THREADS") != null
+                ? Integer.parseInt(System.getenv("SEND_THREADS"))
+                : 10;
+
+
+        readPool = Executors.newFixedThreadPool(READ_THREADS);
+        procPool = Executors.newCachedThreadPool();
+        sendPool = Executors.newFixedThreadPool(SEND_THREADS);
     }
 
     public void run() {
@@ -45,12 +71,6 @@ public class Server {
         collectionManager = new CollectionManager();
         commandManager = new CommandManager();
 
-        String filename = System.getenv("DATA_FILENAME");
-        if (filename != null && !filename.isEmpty()) {
-            collectionManager.setFilename(filename);
-        } else {
-            logger.info("Filename was not specified, using default one");
-        }
         try {
             collectionManager.readFile();
         } catch (FileNotFoundException e) {
@@ -99,27 +119,32 @@ public class Server {
             logger.error("Cannot receive packet: " + e.getMessage());
 //            System.out.println("Cannot receive packet: " + e.getMessage());
         }
-        var contentBytes = new byte[packet.getLength()];
-        System.arraycopy(packet.getData(), 0, contentBytes, 0, packet.getLength());
-        String content = new String(contentBytes);
 
-        logger.info("Deserializing the request");
-        Request r = Converter.requestFromJson(content);
+        readPool.execute(() -> {
+            var contentBytes = new byte[packet.getLength()];
+            System.arraycopy(packet.getData(), 0, contentBytes, 0, packet.getLength());
+            String content = new String(contentBytes);
 
-        var registered = commandManager.getCommands();
-        if (!registered.containsKey(r.commandName())) {
-            logger.info("Unknown command from client: " + r.commandName());
+            logger.info("Deserializing the request");
+            Request r = Converter.requestFromJson(content);
+
+            procPool.execute(() -> {
+                var registered = commandManager.getCommands();
+                if (!registered.containsKey(r.commandName())) {
+                    logger.info("Unknown command from client: " + r.commandName());
 //            System.out.println("Unknown command from client: " + r.commandName());
-            sendResponseUC(r.id(), packet.getAddress(), packet.getPort());
-        }
+                    sendResponseUC(r.id(), packet.getAddress(), packet.getPort());
+                }
 
-        logger.info("Deserializing the command");
-        Command cmd = Converter.commandFromJson(r.commandJson(), registered.get(r.commandName()).getClass());
-        logger.info("Executing command " + cmd.getName());
-        var result = collectionManager.executeCommand(cmd);
+                logger.info("Deserializing the command");
+                Command cmd = Converter.commandFromJson(r.commandJson(), registered.get(r.commandName()).getClass());
+                logger.info("Executing command " + cmd.getName());
+                var result = collectionManager.executeCommand(cmd);
 
-        logger.info("Constructing response based on command result");
-        sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), result);
+                logger.info("Constructing response based on command result");
+                sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), result);
+            });
+        });
     }
 
     private void sendResponseFromResult(long id, InetAddress host, int port, CommandResult result) {
@@ -172,14 +197,15 @@ public class Server {
         var json = Converter.responseToJson(resp);
         var bytes = json.getBytes();
 
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, host, port);
-        try {
-            logger.info("Sending a packet");
-            socket.send(packet);
-        } catch (IOException e) {
-            logger.error("Cannot send packet: " + e.getMessage());
+        sendPool.execute(() -> {
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, host, port);
+            try {
+                logger.info("Sending a packet");
+                socket.send(packet);
+            } catch (IOException e) {
+                logger.error("Cannot send packet: " + e.getMessage());
 //            System.out.println("Cannot send packet: " + e.getMessage());
-        }
+            }
+        });
     }
-
 }
