@@ -3,18 +3,19 @@ package itmo.semyonh.lab7;
 import itmo.semyonh.lab7.commands.*;
 import itmo.semyonh.lab7.helpers.ConsoleReader;
 import itmo.semyonh.lab7.helpers.Converter;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.net.Request;
 import itmo.semyonh.lab7.net.Response;
 import itmo.semyonh.lab7.net.ResponseType;
 import itmo.semyonh.lab7.net.Status;
 import itmo.semyonh.lab7.types.StudyGroup;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,13 +41,6 @@ public class Server {
         logger.info("Set server port to " + port);
         this.port = port;
 
-        String filename = System.getenv("DATA_FILENAME");
-        if (filename != null && !filename.isEmpty()) {
-            collectionManager.setFilename(filename);
-        } else {
-            logger.info("Filename was not specified, using default one");
-        }
-
         int READ_THREADS = System.getenv("READ_THREADS") != null
                 ? Integer.parseInt(System.getenv("READ_THREADS"))
                 : 10;
@@ -59,6 +53,25 @@ public class Server {
         readPool = Executors.newFixedThreadPool(READ_THREADS);
         procPool = Executors.newCachedThreadPool();
         sendPool = Executors.newFixedThreadPool(SEND_THREADS);
+
+        {
+            String server = System.getenv("DB_SERVER");
+            String database = System.getenv("DB_NAME");
+            String user = System.getenv("DB_USER");
+            String password = System.getenv("DB_PASSWORD");
+            for (var i : new String[]{server,database,user,password}) {
+                if (i == null || i.isEmpty()) {
+                    throw new RuntimeException("At least one of database configuration variables wasn't specified");
+                }
+            }
+            int dbport = System.getenv("DB_PORT") != null ?
+                    Integer.parseInt(System.getenv("DB_PORT")) : -1;
+            if (dbport > -1) {
+                Database.configure(server, database, user, password, dbport);
+            } else {
+                Database.configure(server, database, user, password);
+            }
+        }
     }
 
     public void run() {
@@ -71,12 +84,6 @@ public class Server {
         collectionManager = new CollectionManager();
         commandManager = new CommandManager();
 
-        try {
-            collectionManager.readFile();
-        } catch (FileNotFoundException e) {
-            logger.warn("File '" + collectionManager.getFilename() + "' was not found.");
-//            System.out.println("File '" + collectionManager.getFilename() + "' was not found.");
-        }
 
         ConsoleReader reader = null;
         commandManager.registerCommand(new HelpCommand(commandManager));
@@ -94,14 +101,14 @@ public class Server {
         commandManager.registerCommand(new MaxByCoordsCommand());
         commandManager.registerCommand(new PrintUniqueShouldBeExpelledCommand());
         commandManager.registerCommand(new PrintFieldDescFormOfEducationCommand());
+        commandManager.registerCommand(new RegisterAccountCommand());
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                collectionManager.writeFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
+        try {
+            var vals = Database.getInstance().retrieveAll();
+            collectionManager.fill(vals);
+        } catch (SQLException e) {
+            throw new RuntimeException("Init database request failed: " + e.getMessage());
+        }
 
         while (true) {
             read();
@@ -139,10 +146,26 @@ public class Server {
                 logger.info("Deserializing the command");
                 Command cmd = Converter.commandFromJson(r.commandJson(), registered.get(r.commandName()).getClass());
                 logger.info("Executing command " + cmd.getName());
-                var result = collectionManager.executeCommand(cmd);
 
-                logger.info("Constructing response based on command result");
-                sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), result);
+                int allow = 0;
+                if (registered.get(r.commandName()).getClass() == RegisterAccountCommand.class) {
+                    allow = 1;
+                } else {
+                    try {
+                        allow = Database.getInstance().validateAccount(r.creds().login(), r.creds().password());
+                    } catch (SQLException e) {
+                        logger.error("DB error, while validating creds: " + e.getMessage());
+                    }
+                }
+
+                if (allow > 0) {
+                    var result = collectionManager.executeCommand(cmd, allow);
+                    logger.info("Constructing response based on command result");
+                    sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), result);
+                } else {
+                    logger.info("Client sent invalid credentials");
+                    sendResponseFromResult(r.id(), packet.getAddress(), packet.getPort(), new CommandResult(CommandResultType.Failed, "no valid credentials"));
+                }
             });
         });
     }

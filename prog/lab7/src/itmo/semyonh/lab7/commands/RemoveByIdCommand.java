@@ -1,7 +1,10 @@
 package itmo.semyonh.lab7.commands;
 
+import itmo.semyonh.lab7.CollectionManager;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.types.StudyGroup;
 
+import java.sql.SQLException;
 import java.util.LinkedHashSet;
 
 
@@ -19,13 +22,33 @@ public class RemoveByIdCommand implements Command {
 
     @Override
     public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        // TODO;
         if (id == 0) {
             return new CommandResult(CommandResultType.Failed, "Could not call " + getName() + " command without an id arg");
         }
 
-        collection.removeIf(g -> g.getId() == id);
+        boolean found = false;
+        for (var e : collection) {
+            if (e.getId() == id) {
+                found = true;
+            }
+        }
 
-        return new CommandResult(CommandResultType.None, null);
+        if (!found) {
+            return new CommandResult(CommandResultType.Failed, "Could not find id " + id);
+        }
+
+        try {
+            var res = Database.getInstance().remove(id, CollectionManager.accountID);
+            if (res) {
+                collection.removeIf((g) -> g.getId() == id);
+                return new CommandResult(CommandResultType.None, null);
+            } else {
+                return new CommandResult(CommandResultType.Failed, "Could not update study group, possible wrong credentials");
+            }
+        } catch (SQLException e) {
+            return new CommandResult(CommandResultType.Failed, "DB error: " + e.getMessage());
+        }
     }
 
     @Override

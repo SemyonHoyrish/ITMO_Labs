@@ -1,7 +1,11 @@
 package itmo.semyonh.lab7.commands;
 
+import itmo.semyonh.lab7.CollectionManager;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.types.StudyGroup;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**
@@ -16,7 +20,18 @@ public class ClearCommand implements Command {
 
     @Override
     public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
-        collection.clear();
+        var confirmed = new ArrayList<Integer>();
+        for(var g : collection) {
+            try {
+                var res = Database.getInstance().remove(g.getId(), CollectionManager.accountID);
+                if (res) {
+                    confirmed.add(g.getId());
+                }
+            } catch (SQLException e) {
+            }
+        }
+
+        collection.removeIf(g -> confirmed.contains(g.getId()));
 
         return new CommandResult(CommandResultType.None, null);
     }

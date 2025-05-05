@@ -1,8 +1,11 @@
 package itmo.semyonh.lab7.commands;
 
+import itmo.semyonh.lab7.CollectionManager;
 import itmo.semyonh.lab7.helpers.ConsoleReader;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.types.StudyGroup;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
@@ -26,13 +29,18 @@ public class AddIfMinCommand implements Command {
 
     @Override
     public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
-        StudyGroup min = Collections.min(collection);
-
-        if (group.compareTo(min) < 0) {
-            group.regenerate();
-            collection.add(group);
+        if (collection.isEmpty() || group.compareTo(Collections.min(collection)) < 0) {
+//            group.regenerate();
+            try {
+                if (Database.getInstance().insert(group, CollectionManager.accountID)) {
+                    collection.add(group);
+                } else {
+                    return new CommandResult(CommandResultType.Failed, "Was not added in database");
+                }
+            } catch (SQLException e) {
+                return new CommandResult(CommandResultType.Failed, "Database error: " + e.getMessage());
+            }
         }
-
         return new CommandResult(CommandResultType.None, null);
     }
 

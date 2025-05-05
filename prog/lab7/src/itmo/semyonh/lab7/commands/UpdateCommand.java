@@ -1,8 +1,12 @@
 package itmo.semyonh.lab7.commands;
 
+import itmo.semyonh.lab7.CollectionManager;
 import itmo.semyonh.lab7.helpers.ConsoleReader;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.types.StudyGroup;
 
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 
 /**
@@ -30,7 +34,7 @@ public class UpdateCommand implements Command {
             return new CommandResult(CommandResultType.Failed, "Could not call " + getName() + " command without an id arg");
         }
 
-        newGroup.regenerate();
+//        newGroup.regenerate();
 
         StudyGroup found = null;
         for (StudyGroup studyGroup : collection) {
@@ -40,13 +44,22 @@ public class UpdateCommand implements Command {
         }
 
         if (found != null) {
-            collection.remove(found);
-            collection.add(newGroup);
+            boolean res = false;
+            try {
+                res = Database.getInstance().update(found.getId(), newGroup, CollectionManager.accountID);
+            } catch (SQLException e) {
+                return new CommandResult(CommandResultType.Failed, "DB error: " + e.getMessage());
+            }
+            if (res) {
+                collection.remove(found);
+                collection.add(newGroup);
+                return new CommandResult(CommandResultType.None, null);
+            } else {
+                return new CommandResult(CommandResultType.Failed, "Could not update study group, possible wrong credentials");
+            }
         } else {
             return new CommandResult(CommandResultType.Failed, "Could not find study group with id " + id);
         }
-
-        return new CommandResult(CommandResultType.None, null);
     }
 
     @Override

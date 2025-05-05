@@ -1,8 +1,8 @@
 package itmo.semyonh.lab7;
 
+
 public class Main {
     public static void main(String[] args) {
-
         var mode = System.getenv("MODE");
         var host = System.getenv("HOST");
         var portString = System.getenv("PORT");
@@ -20,6 +20,5 @@ public class Main {
                 System.out.println("Client was interrupted");
             }
         }
-
     }
 }

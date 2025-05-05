@@ -22,10 +22,9 @@ public class CollectionManager {
     private LinkedHashSet<StudyGroup> data;
     private Date initDate;
     private List<Command> history;
-    private String filename = "test.json";
 
     private ReentrantLock lock;
-
+    public static int accountID = -1;
 
     /**
      * A default constructor to initialize components of the class.
@@ -37,34 +36,29 @@ public class CollectionManager {
         lock = new ReentrantLock();
     }
 
+    public void fill(Iterable<StudyGroup> entries) {
+        lock.lock();
+        for (var e : entries) {
+            data.add(e);
+        }
+        lock.unlock();
+    }
+
     /**
      * Executes commands on `data`,
      * also handles special cases (`save` command).
      *
      * @param c Command to execute
      */
-    public CommandResult executeCommand(Command c) {
+    public CommandResult executeCommand(Command c, int accountID) {
         lock.lock();
+        CollectionManager.accountID = accountID;
         history.add(c);
 
-        // handle special commands
-        switch (c.getName()) {
-            case "save":
-                try {
-                    writeFile();
-                } catch (IOException e) {
-                    System.out.println("Cannot write file: " + e.getMessage());
-                }
-                break;
-
-            default:
-                var res = c.execute(data);
-                lock.unlock();
-                return res;
-        }
-
+        var res = c.execute(data);
+        CollectionManager.accountID = -1;
         lock.unlock();
-        return null;
+        return res;
     }
 
     /**
@@ -85,64 +79,5 @@ public class CollectionManager {
      */
     public List<Command> getHistory() {
         return history;
-    }
-
-    /**
-     * Returns filename of the file to write and read data of current collection.
-     *
-     * @return filename of data file.
-     */
-    public String getFilename() {
-        return filename;
-    }
-
-    /**
-     * Sets filename of the file, that is used to write and read data of current collection.
-     *
-     * @param filename
-     */
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-
-    /**
-     * Actually serializes `data` into json and write in file.
-     *
-     * @throws IOException on I/O write error
-     */
-    public void writeFile() throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filename));
-
-        Gson gson = new Gson();
-        var result = gson.toJson(data);
-
-//        System.out.println(result);
-
-        writer.write(result);
-
-        writer.flush();
-        writer.close();
-    }
-
-    /**
-     * Reads json stored data from file and deserializes it
-     *
-     * @throws FileNotFoundException if file was not found
-     */
-    public void readFile() throws FileNotFoundException {
-        InputStreamReader reader = new InputStreamReader(new FileInputStream(filename));
-
-        Gson gson = new Gson();
-        Type type = new TypeToken<LinkedHashSet<StudyGroup>>() {}.getType();
-        data = gson.fromJson(reader, type);
-
-        int id = 0;
-        for (StudyGroup g : data) {
-            if (g.getId() > id) {
-                id = g.getId();
-            }
-        }
-        StudyGroup.setBaseID(id + 1);
     }
 }

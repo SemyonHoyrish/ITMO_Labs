@@ -31,6 +31,9 @@ public class StudyGroup implements Comparable<StudyGroup> {
     public Integer getId() {
         return id;
     }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -68,6 +71,9 @@ public class StudyGroup implements Comparable<StudyGroup> {
 
     public java.util.Date getCreationDate() {
         return creationDate;
+    }
+    public void setCreationDate(java.util.Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public long getStudentsCount() {

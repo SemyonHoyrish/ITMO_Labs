@@ -3,6 +3,7 @@ package itmo.semyonh.lab7;
 import itmo.semyonh.lab7.commands.*;
 import itmo.semyonh.lab7.helpers.Converter;
 import itmo.semyonh.lab7.helpers.ConsoleReader;
+import itmo.semyonh.lab7.net.Credentials;
 import itmo.semyonh.lab7.net.Request;
 import itmo.semyonh.lab7.net.Response;
 import itmo.semyonh.lab7.net.ResponseType;
@@ -18,6 +19,7 @@ public class Client {
     private InetSocketAddress serverAddress;
     private DatagramChannel channel;
     private long commandID = 0;
+    private Credentials credentials;
 
     public Client(String host, int port) {
         serverAddress = new InetSocketAddress(host, port);
@@ -51,11 +53,19 @@ public class Client {
         commandManager.registerCommand(new MaxByCoordsCommand());
         commandManager.registerCommand(new PrintUniqueShouldBeExpelledCommand());
         commandManager.registerCommand(new PrintFieldDescFormOfEducationCommand());
+        commandManager.registerCommand(new RegisterAccountCommand());
 
 
         var waitingForResponse = new HashMap<Long, Command>();
 
         Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Please enter your login: ");
+        String login = scanner.nextLine();
+        System.out.println("Please enter your password: ");
+        String password = scanner.nextLine();
+        credentials = new Credentials(login, password);
+
         ArrayDeque<Command> parsedCommands = new ArrayDeque<>();
         new Thread(() -> {
             while (true) {
@@ -98,7 +108,7 @@ public class Client {
                 var cmd = parsedCommands.removeFirst();
 
                 if (!splitExecuteCommand(cmd, waitingForResponse)) {
-                    var r = new Request(commandID++, cmd.getName(), Converter.commandToJson(cmd));
+                    var r = new Request(commandID++, cmd.getName(), Converter.commandToJson(cmd), credentials);
                     if (send(r)) {
                         waitingForResponse.put(commandID-1, cmd);
                     }
@@ -112,7 +122,7 @@ public class Client {
         if (command.getClass() == ExecuteScriptCommand.class) {
             for (var c : ((ExecuteScriptCommand) command).commandsToExecute) {
                 if (!splitExecuteCommand(c, wfr)) {
-                    var rr = new Request(commandID++, c.getName(), Converter.commandToJson(c));
+                    var rr = new Request(commandID++, c.getName(), Converter.commandToJson(c), credentials);
                     if (send(rr)) {
                         wfr.put(commandID - 1, c);
                     }

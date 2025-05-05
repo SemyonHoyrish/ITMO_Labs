@@ -1,8 +1,12 @@
 package itmo.semyonh.lab7.commands;
 
+import itmo.semyonh.lab7.CollectionManager;
 import itmo.semyonh.lab7.helpers.ConsoleReader;
+import itmo.semyonh.lab7.helpers.Database;
 import itmo.semyonh.lab7.types.StudyGroup;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**
@@ -24,7 +28,25 @@ public class RemoveGreaterCommand implements Command {
 
     @Override
     public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
-        collection.removeIf( g -> g.compareTo(group) > 0 );
+        var toRemove = new ArrayList<Integer>();
+        for (var g : collection) {
+            if (g.compareTo(group) > 0) {
+                toRemove.add(g.getId());
+            }
+        }
+
+        var confirmed = new ArrayList<Integer>();
+        for (int id : toRemove) {
+            try {
+                var res = Database.getInstance().remove(id, CollectionManager.accountID);
+                if (res) {
+                    confirmed.add(id);
+                }
+            } catch (SQLException e) {
+            }
+        }
+
+        collection.removeIf(g -> confirmed.contains(g.getId()));
 
         return new CommandResult(CommandResultType.None, null);
     }
