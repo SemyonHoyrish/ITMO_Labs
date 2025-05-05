@@ -16,6 +16,10 @@ public class MaxByCoordsCommand implements Command {
 
     @Override
     public CommandResult execute(LinkedHashSet<StudyGroup> collection) {
+        if (collection.isEmpty()) {
+            return new CommandResult(CommandResultType.None, null);
+        }
+
         var r = Collections.max(collection, (a, b) -> a.getCoordinates().compareTo(b.getCoordinates()));
 
         return new CommandResult(CommandResultType.Item, r);

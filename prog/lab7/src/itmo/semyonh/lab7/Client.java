@@ -97,14 +97,7 @@ public class Client {
             } else if (!parsedCommands.isEmpty()) {
                 var cmd = parsedCommands.removeFirst();
 
-                if (cmd.getClass() == ExecuteScriptCommand.class) {
-                    for (var c : ((ExecuteScriptCommand) cmd).commandsToExecute) {
-                        var rr = new Request(commandID++, c.getName(), Converter.commandToJson(c));
-                        if (send(rr)) {
-                            waitingForResponse.put(commandID-1, c);
-                        }
-                    }
-                } else {
+                if (!splitExecuteCommand(cmd, waitingForResponse)) {
                     var r = new Request(commandID++, cmd.getName(), Converter.commandToJson(cmd));
                     if (send(r)) {
                         waitingForResponse.put(commandID-1, cmd);
@@ -113,6 +106,21 @@ public class Client {
 
             }
         }
+    }
+
+    private boolean splitExecuteCommand(Command command, HashMap<Long, Command> wfr) {
+        if (command.getClass() == ExecuteScriptCommand.class) {
+            for (var c : ((ExecuteScriptCommand) command).commandsToExecute) {
+                if (!splitExecuteCommand(c, wfr)) {
+                    var rr = new Request(commandID++, c.getName(), Converter.commandToJson(c));
+                    if (send(rr)) {
+                        wfr.put(commandID - 1, c);
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     private boolean send(Request r) {
