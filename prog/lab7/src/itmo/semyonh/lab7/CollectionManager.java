@@ -38,10 +38,13 @@ public class CollectionManager {
 
     public void fill(Iterable<StudyGroup> entries) {
         lock.lock();
-        for (var e : entries) {
-            data.add(e);
+        try {
+            for (var e : entries) {
+                data.add(e);
+            }
+        } finally {
+            lock.unlock();
         }
-        lock.unlock();
     }
 
     /**
@@ -52,13 +55,16 @@ public class CollectionManager {
      */
     public CommandResult executeCommand(Command c, int accountID) {
         lock.lock();
-        CollectionManager.accountID = accountID;
-        history.add(c);
+        try {
+            CollectionManager.accountID = accountID;
+            history.add(c);
 
-        var res = c.execute(data);
-        CollectionManager.accountID = -1;
-        lock.unlock();
-        return res;
+            var res = c.execute(data);
+            CollectionManager.accountID = -1;
+            return res;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**

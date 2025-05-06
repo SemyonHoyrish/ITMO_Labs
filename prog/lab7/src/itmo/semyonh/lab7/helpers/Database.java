@@ -59,6 +59,8 @@ public class Database {
         var st = conn.createStatement();
         var rs = st.executeQuery("SELECT * FROM study_group JOIN coordinates ON (study_group.coordinates_id = coordinates.id) WHERE study_group.id = " + study_group_id);
         if (!rs.next()) {
+            rs.close();
+            st.close();
             return null;
         }
         StudyGroup group = new StudyGroup();
@@ -75,9 +77,13 @@ public class Database {
         group.setSemester(Semester.valueOf(rs.getString("semester")));
         var person = parsePerson(rs.getInt("group_admin_id"), conn);
         if (person == null) {
+            rs.close();
+            st.close();
             return null;
         }
         group.setGroupAdmin(person);
+        rs.close();
+        st.close();
         return group;
     }
 
@@ -85,6 +91,8 @@ public class Database {
         var st = conn.createStatement();
         var rs = st.executeQuery("SELECT * FROM person WHERE id = " + person_id);
         if (!rs.next()) {
+            rs.close();
+            st.close();
             return null;
         }
         Person person = new Person();
@@ -100,6 +108,8 @@ public class Database {
             }
         }
         person.setNationality(Country.valueOf(rs.getString("nationality")));
+        rs.close();
+        st.close();
         return person;
     }
 
@@ -119,6 +129,10 @@ public class Database {
             }
         }
 
+        res.close();
+        st.close();
+        conn.close();
+
         return list;
     }
 
@@ -128,6 +142,7 @@ public class Database {
         var coords_id = insertCoordinates(group.getCoordinates(), conn);
         if (coords_id == -1) {
             logger.error("coords_id is -1");
+            st.close();
             return -1;
         }
         st.setInt(2, coords_id);
@@ -139,6 +154,7 @@ public class Database {
         var person_id = insertPerson(group.getGroupAdmin(), conn);
         if (person_id == -1) {
             logger.error("person_id is -1");
+            st.close();
             return -1;
         }
         st.setInt(8, person_id);
@@ -146,12 +162,16 @@ public class Database {
         var res = st.executeUpdate();
         if (res == 0) {
             logger.error("no update result");
+            st.close();
             return -1;
         }
         if (!st.getGeneratedKeys().next()) {
+            st.close();
             return -1;
         }
-        return st.getGeneratedKeys().getInt(1);
+        var r = st.getGeneratedKeys().getInt(1);
+        st.close();
+        return r;
     }
 
     private int insertCoordinates(Coordinates coords, Connection conn) throws SQLException {
@@ -161,11 +181,15 @@ public class Database {
 
         var res = st.executeUpdate();
         if (res == 0) {
+            st.close();
             return -1;
         }
         if (st.getGeneratedKeys().next()) {
-            return st.getGeneratedKeys().getInt("id");
+            var r = st.getGeneratedKeys().getInt("id");
+            st.close();
+            return r;
         } else {
+            st.close();
             return -1;
         }
     }
@@ -185,12 +209,16 @@ public class Database {
         var res = st.executeUpdate();
         if (res == 0) {
             logger.error("no person insert res");
+            st.close();
             return -1;
         }
         if (st.getGeneratedKeys().next()) {
-            return st.getGeneratedKeys().getInt("id");
+            var r = st.getGeneratedKeys().getInt("id");
+            st.close();
+            return r;
         } else {
             logger.error("no person insert res set entries");
+            st.close();
             return -1;
         }
     }
@@ -201,8 +229,10 @@ public class Database {
         st.setInt(2, objectID);
         var res = st.executeUpdate();
         if (res == 0) {
+            st.close();
             return false;
         }
+        st.close();
         return true;
     }
 
@@ -212,8 +242,10 @@ public class Database {
         st.setInt(2, objectID);
         var res = st.executeQuery();
         if (!res.next()) {
+            st.close();
             return false;
         }
+        st.close();
         return true;
     }
 
@@ -227,9 +259,11 @@ public class Database {
         var res = linkAccountObject(accountID, id, conn);
         if (res) {
             conn.commit();
+            conn.close();
             return true;
         }
         conn.rollback();
+        conn.close();
         return false;
     }
 
@@ -238,11 +272,13 @@ public class Database {
         conn.setAutoCommit(false);
 
         if (!confirmOwnership(originID, accountID, conn)) {
+            conn.close();
             return false;
         }
 
         if (!removeStudyGroup(originID, conn)) {
             conn.rollback();
+            conn.close();
             return false;
         }
 
@@ -251,9 +287,11 @@ public class Database {
         var res = linkAccountObject(accountID, id, conn);
         if (res) {
             conn.commit();
+            conn.close();
             return true;
         }
         conn.rollback();
+        conn.close();
         return false;
     }
 
@@ -262,9 +300,11 @@ public class Database {
         st.setInt(1, groupID);
         var res = st.executeUpdate();
         if (res == 0) {
+            st.close();
             return false;
         }
-         return true;
+        st.close();
+        return true;
     }
 
     public boolean remove(int originID, int accountID) throws SQLException {
@@ -272,6 +312,7 @@ public class Database {
         conn.setAutoCommit(false);
 
         if (!confirmOwnership(accountID, originID, conn)) {
+            conn.close();
             return false;
         }
 
@@ -279,9 +320,11 @@ public class Database {
 
         if (res) {
             conn.commit();
+            conn.close();
             return true;
         }
         conn.rollback();
+        conn.close();
         return false;
     }
 
@@ -312,6 +355,9 @@ public class Database {
             st.setString(1, login);
             var res = st.executeQuery();
             if (res.next()) {
+                res.close();
+                st.close();
+                conn.close();
                 return false;
             }
         }
@@ -325,8 +371,12 @@ public class Database {
 
         var res = st.executeUpdate();
         if (res == 0) {
+            st.close();
+            conn.close();
             return false;
         }
+        st.close();
+        conn.close();
         return true;
     }
 
@@ -337,6 +387,9 @@ public class Database {
         st.setString(1, login);
         var res = st.executeQuery();
         if (!res.next()) {
+            res.close();
+            st.close();
+            conn.close();
             return -1;
         }
         var ph = res.getBytes("password_hash");
@@ -345,10 +398,17 @@ public class Database {
 
         for (int i = 0; i < ph.length; ++i) {
             if (ph[i] != nh[i]) {
+                res.close();
+                st.close();
+                conn.close();
                 return -1;
             }
         }
 
-        return res.getInt("id");
+        var res_id = res.getInt("id");
+        res.close();
+        st.close();
+        conn.close();
+        return res_id;
     }
 }
