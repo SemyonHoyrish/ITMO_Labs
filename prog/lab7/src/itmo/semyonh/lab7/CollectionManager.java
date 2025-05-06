@@ -3,6 +3,7 @@ package itmo.semyonh.lab7;
 import com.google.gson.Gson;
 import itmo.semyonh.lab7.commands.Command;
 import itmo.semyonh.lab7.commands.CommandResult;
+import itmo.semyonh.lab7.commands.CommandResultType;
 import itmo.semyonh.lab7.types.StudyGroup;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -42,6 +43,8 @@ public class CollectionManager {
             for (var e : entries) {
                 data.add(e);
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }
@@ -62,6 +65,8 @@ public class CollectionManager {
             var res = c.execute(data);
             CollectionManager.accountID = -1;
             return res;
+        } catch (Exception e) {
+            return new CommandResult(CommandResultType.Failed, "Exception: " + e.getMessage());
         } finally {
             lock.unlock();
         }

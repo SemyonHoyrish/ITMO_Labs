@@ -39,13 +39,13 @@ CREATE TABLE person (
 CREATE TABLE study_group (
     id serial PRIMARY KEY,
     name varchar,
-    coordinates_id integer REFERENCES coordinates,
+    coordinates_id integer REFERENCES coordinates ON DELETE CASCADE,
     creation_date timestamp,
     students_count bigint,
     should_be_expelled bigint,
     form_of_education form_of_education,
     semester semester,
-    group_admin_id integer REFERENCES person
+    group_admin_id integer REFERENCES person ON DELETE CASCADE
 );
 --- SECTION END ---
 
