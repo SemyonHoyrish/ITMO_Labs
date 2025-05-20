@@ -5,12 +5,14 @@ import itmo.semyonh.lab8.commands.*;
 import itmo.semyonh.lab8.helpers.Converter;
 import itmo.semyonh.lab8.net.*;
 import itmo.semyonh.lab8.types.*;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -26,10 +28,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 // TODO:
@@ -53,6 +52,156 @@ public class GUICLient extends Application {
 //    private TableView tableView;
     private Stage modalWindowStage;
     private Stage notificationWindowStage;
+    private Canvas canvas;
+    private final List<javafx.scene.paint.Color> ALL_COLORS = Arrays.asList(
+            javafx.scene.paint.Color.ALICEBLUE,
+            javafx.scene.paint.Color.ANTIQUEWHITE,
+            javafx.scene.paint.Color.AQUA,
+            javafx.scene.paint.Color.AQUAMARINE,
+            javafx.scene.paint.Color.AZURE,
+            javafx.scene.paint.Color.BEIGE,
+            javafx.scene.paint.Color.BISQUE,
+            javafx.scene.paint.Color.BLACK,
+            javafx.scene.paint.Color.BLANCHEDALMOND,
+            javafx.scene.paint.Color.BLUE,
+            javafx.scene.paint.Color.BLUEVIOLET,
+            javafx.scene.paint.Color.BROWN,
+            javafx.scene.paint.Color.BURLYWOOD,
+            javafx.scene.paint.Color.CADETBLUE,
+            javafx.scene.paint.Color.CHARTREUSE,
+            javafx.scene.paint.Color.CHOCOLATE,
+            javafx.scene.paint.Color.CORAL,
+            javafx.scene.paint.Color.CORNFLOWERBLUE,
+            javafx.scene.paint.Color.CORNSILK,
+            javafx.scene.paint.Color.CRIMSON,
+            javafx.scene.paint.Color.CYAN,
+            javafx.scene.paint.Color.DARKBLUE,
+            javafx.scene.paint.Color.DARKCYAN,
+            javafx.scene.paint.Color.DARKGOLDENROD,
+            javafx.scene.paint.Color.DARKGRAY,
+            javafx.scene.paint.Color.DARKGREEN,
+            javafx.scene.paint.Color.DARKGREY,
+            javafx.scene.paint.Color.DARKKHAKI,
+            javafx.scene.paint.Color.DARKMAGENTA,
+            javafx.scene.paint.Color.DARKOLIVEGREEN,
+            javafx.scene.paint.Color.DARKORANGE,
+            javafx.scene.paint.Color.DARKORCHID,
+            javafx.scene.paint.Color.DARKRED,
+            javafx.scene.paint.Color.DARKSALMON,
+            javafx.scene.paint.Color.DARKSEAGREEN,
+            javafx.scene.paint.Color.DARKSLATEBLUE,
+            javafx.scene.paint.Color.DARKSLATEGRAY,
+            javafx.scene.paint.Color.DARKSLATEGREY,
+            javafx.scene.paint.Color.DARKTURQUOISE,
+            javafx.scene.paint.Color.DARKVIOLET,
+            javafx.scene.paint.Color.DEEPPINK,
+            javafx.scene.paint.Color.DEEPSKYBLUE,
+            javafx.scene.paint.Color.DIMGRAY,
+            javafx.scene.paint.Color.DIMGREY,
+            javafx.scene.paint.Color.DODGERBLUE,
+            javafx.scene.paint.Color.FIREBRICK,
+            javafx.scene.paint.Color.FLORALWHITE,
+            javafx.scene.paint.Color.FORESTGREEN,
+            javafx.scene.paint.Color.FUCHSIA,
+            javafx.scene.paint.Color.GAINSBORO,
+            javafx.scene.paint.Color.GHOSTWHITE,
+            javafx.scene.paint.Color.GOLD,
+            javafx.scene.paint.Color.GOLDENROD,
+            javafx.scene.paint.Color.GRAY,
+            javafx.scene.paint.Color.GREEN,
+            javafx.scene.paint.Color.GREENYELLOW,
+            javafx.scene.paint.Color.GREY,
+            javafx.scene.paint.Color.HONEYDEW,
+            javafx.scene.paint.Color.HOTPINK,
+            javafx.scene.paint.Color.INDIANRED,
+            javafx.scene.paint.Color.INDIGO,
+            javafx.scene.paint.Color.IVORY,
+            javafx.scene.paint.Color.KHAKI,
+            javafx.scene.paint.Color.LAVENDER,
+            javafx.scene.paint.Color.LAVENDERBLUSH,
+            javafx.scene.paint.Color.LAWNGREEN,
+            javafx.scene.paint.Color.LEMONCHIFFON,
+            javafx.scene.paint.Color.LIGHTBLUE,
+            javafx.scene.paint.Color.LIGHTCORAL,
+            javafx.scene.paint.Color.LIGHTCYAN,
+            javafx.scene.paint.Color.LIGHTGOLDENRODYELLOW,
+            javafx.scene.paint.Color.LIGHTGRAY,
+            javafx.scene.paint.Color.LIGHTGREEN,
+            javafx.scene.paint.Color.LIGHTGREY,
+            javafx.scene.paint.Color.LIGHTPINK,
+            javafx.scene.paint.Color.LIGHTSALMON,
+            javafx.scene.paint.Color.LIGHTSEAGREEN,
+            javafx.scene.paint.Color.LIGHTSKYBLUE,
+            javafx.scene.paint.Color.LIGHTSLATEGRAY,
+            javafx.scene.paint.Color.LIGHTSLATEGREY,
+            javafx.scene.paint.Color.LIGHTSTEELBLUE,
+            javafx.scene.paint.Color.LIGHTYELLOW,
+            javafx.scene.paint.Color.LIME,
+            javafx.scene.paint.Color.LIMEGREEN,
+            javafx.scene.paint.Color.LINEN,
+            javafx.scene.paint.Color.MAGENTA,
+            javafx.scene.paint.Color.MAROON,
+            javafx.scene.paint.Color.MEDIUMAQUAMARINE,
+            javafx.scene.paint.Color.MEDIUMBLUE,
+            javafx.scene.paint.Color.MEDIUMORCHID,
+            javafx.scene.paint.Color.MEDIUMPURPLE,
+            javafx.scene.paint.Color.MEDIUMSEAGREEN,
+            javafx.scene.paint.Color.MEDIUMSLATEBLUE,
+            javafx.scene.paint.Color.MEDIUMSPRINGGREEN,
+            javafx.scene.paint.Color.MEDIUMTURQUOISE,
+            javafx.scene.paint.Color.MEDIUMVIOLETRED,
+            javafx.scene.paint.Color.MIDNIGHTBLUE,
+            javafx.scene.paint.Color.MINTCREAM,
+            javafx.scene.paint.Color.MISTYROSE,
+            javafx.scene.paint.Color.MOCCASIN,
+            javafx.scene.paint.Color.NAVAJOWHITE,
+            javafx.scene.paint.Color.NAVY,
+            javafx.scene.paint.Color.OLDLACE,
+            javafx.scene.paint.Color.OLIVE,
+            javafx.scene.paint.Color.OLIVEDRAB,
+            javafx.scene.paint.Color.ORANGE,
+            javafx.scene.paint.Color.ORANGERED,
+            javafx.scene.paint.Color.ORCHID,
+            javafx.scene.paint.Color.PALEGOLDENROD,
+            javafx.scene.paint.Color.PALEGREEN,
+            javafx.scene.paint.Color.PALETURQUOISE,
+            javafx.scene.paint.Color.PALEVIOLETRED,
+            javafx.scene.paint.Color.PAPAYAWHIP,
+            javafx.scene.paint.Color.PEACHPUFF,
+            javafx.scene.paint.Color.PERU,
+            javafx.scene.paint.Color.PINK,
+            javafx.scene.paint.Color.PLUM,
+            javafx.scene.paint.Color.POWDERBLUE,
+            javafx.scene.paint.Color.PURPLE,
+            javafx.scene.paint.Color.RED,
+            javafx.scene.paint.Color.ROSYBROWN,
+            javafx.scene.paint.Color.ROYALBLUE,
+            javafx.scene.paint.Color.SADDLEBROWN,
+            javafx.scene.paint.Color.SALMON,
+            javafx.scene.paint.Color.SANDYBROWN,
+            javafx.scene.paint.Color.SEAGREEN,
+            javafx.scene.paint.Color.SEASHELL,
+            javafx.scene.paint.Color.SIENNA,
+            javafx.scene.paint.Color.SILVER,
+            javafx.scene.paint.Color.SKYBLUE,
+            javafx.scene.paint.Color.SLATEBLUE,
+            javafx.scene.paint.Color.SLATEGRAY,
+            javafx.scene.paint.Color.SLATEGREY,
+            javafx.scene.paint.Color.SNOW,
+            javafx.scene.paint.Color.SPRINGGREEN,
+            javafx.scene.paint.Color.STEELBLUE,
+            javafx.scene.paint.Color.TAN,
+            javafx.scene.paint.Color.TEAL,
+            javafx.scene.paint.Color.THISTLE,
+            javafx.scene.paint.Color.TOMATO,
+            javafx.scene.paint.Color.TURQUOISE,
+            javafx.scene.paint.Color.VIOLET,
+            javafx.scene.paint.Color.WHEAT,
+            javafx.scene.paint.Color.WHITE,
+            javafx.scene.paint.Color.WHITESMOKE,
+            javafx.scene.paint.Color.YELLOW,
+            javafx.scene.paint.Color.YELLOWGREEN
+    );
 
     private volatile boolean executing = true;
     private Thread threadPoll;
@@ -526,7 +675,15 @@ public class GUICLient extends Application {
     }
 
     private void initVisualisationView(Pane pane) {
+        var pp = new Pane();
+        var c = new Canvas();
+        canvas = c;
+        c.setWidth(1200);
+        c.setHeight(600);
+        pp.getChildren().add(c);
 
+        pane.getChildren().add(pp);
+        pp.visibleProperty().bind(useVisualisationViewProperty);
     }
 
     @Override
@@ -568,22 +725,32 @@ public class GUICLient extends Application {
             }
         });
 
-        var p = new VBox();
-        initMenuBar(p);
-        initTableView(p);
+        var p1 = new VBox();
+        var p2 = new VBox();
+        initMenuBar(p1);
+        initMenuBar(p2);
+        initTableView(p1);
+        initVisualisationView(p2);
 
-        var scene = new Scene(p, 1200, 600);
+        var sceneTable = new Scene(p1, 1200, 600);
+        var sceneVisual = new Scene(p2, 1200, 600);
 
-        var t = new Label();
-        t.setText("hello");
-        p.getChildren().add(t);
+        useVisualisationViewProperty.addListener(e -> {
+            if (useVisualisationViewProperty.get()) {
+                stage.setScene(sceneVisual);
+            } else {
+                stage.setScene(sceneTable);
+            }
+        });
 
         stage.setTitle("Collection Manager - GUI Client");
-        stage.setScene(scene);
+        stage.setScene(sceneTable);
         stage.show();
 
         threadPoll.start();
         threadRetrieve.start();
+
+        drawCanvas();
     }
 
     @Override
@@ -616,6 +783,60 @@ public class GUICLient extends Application {
         }
         data.removeIf((i) -> s.contains(i.id.get()));
         pollingData.clear();
+    }
+
+    private HashMap<Long, List<Double>> drawCurrent = new HashMap<>();
+    private double drawSpeed = 2;
+    private void drawCanvas() {
+//        if (drawing) { return; }
+//        drawing = true;
+
+        var context = canvas.getGraphicsContext2D();
+
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                context.setFill(javafx.scene.paint.Color.WHITE);
+                context.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+                for (var i : data) {
+                    if (!drawCurrent.containsKey((long)i.id.get())) {
+                        drawCurrent.put((long)i.id.get(), new ArrayList<>(Arrays.asList(0.0, 0.0)));
+                    }
+
+                    var vals = drawCurrent.get((long)i.id.get());
+                    vals.set(0, Math.min(vals.get(0) + drawSpeed, i.coordinatesX.getValue()));
+                    vals.set(1, Math.min(vals.get(1) + drawSpeed, -i.coordinatesY.getValue()));
+                    drawCurrent.put((long)i.id.get(), vals);
+
+                    context.setFill(ALL_COLORS.get(i.owner.getValue().hashCode() % ALL_COLORS.size()));
+//                    context.fillOval(i.coordinatesX.getValue(), -i.coordinatesY.getValue(), 10, 10);
+                    context.fillOval(vals.get(0), vals.get(1), 10, 10);
+
+                    if (Math.abs(vals.get(0) -i.coordinatesX.getValue() ) < 0.1 && Math.abs(vals.get(1) - (-i.coordinatesY.getValue()) ) < 0.1) {
+                        context.fillText(i.owner.getValue(), i.coordinatesX.getValue(), -i.coordinatesY.getValue() - 20);
+                    }
+                }
+            }
+        };
+        timer.start();
+
+        canvas.setOnMouseClicked(event -> {
+            double mouseX = event.getX();
+            double mouseY = event.getY();
+
+            for (var i : data) {
+                double dx = mouseX - (i.coordinatesX.getValue() + 5);
+                double dy = mouseY - (-i.coordinatesY.getValue() + 5);
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= 5) {
+                    updateCommand(i.id.get());
+                }
+            }
+
+        });
+
     }
 
     private void send(Command c) {
