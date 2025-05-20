@@ -22,6 +22,10 @@ public class AddIfMinCommand implements Command {
         this.reader = reader;
     }
 
+    public AddIfMinCommand(StudyGroup group) {
+        this.group = group;
+    }
+
     @Override
     public void prepare() {
         group = reader.readStudyGroup();

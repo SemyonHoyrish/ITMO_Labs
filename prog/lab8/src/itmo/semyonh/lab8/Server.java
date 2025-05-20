@@ -175,26 +175,37 @@ public class Server {
         Response resp = null;
 
         if (result == null) {
-            resp = new Response(id, Status.UNKNOWN_COMMAND, ResponseType.None, null);
+            resp = new Response(id, Status.UNKNOWN_COMMAND, ResponseType.None, null, null);
         } else {
             switch (result.type()) {
                 case None -> {
-                    resp = new Response(id, Status.PROCESSED, ResponseType.None, null);
+                    resp = new Response(id, Status.PROCESSED, ResponseType.None, null, null);
                 }
                 case Failed -> {
-                    resp = new Response(id, Status.FAILED, ResponseType.PlainText, (String)result.result());
+                    resp = new Response(id, Status.FAILED, ResponseType.PlainText, (String)result.result(), null);
                 }
                 case PlainText -> {
-                    resp = new Response(id, Status.PROCESSED, ResponseType.PlainText, (String)result.result());
+                    resp = new Response(id, Status.PROCESSED, ResponseType.PlainText, (String)result.result(), null);
                 }
                 case Item -> {
-                    resp = new Response(id, Status.PROCESSED, ResponseType.Item, Converter.studyGroupToJson((StudyGroup) result.result()));
+                    try {
+                        var login = Database.getInstance().getObjectOwner(((StudyGroup) result.result()).getId());
+                        resp = new Response(id, Status.PROCESSED, ResponseType.Item, Converter.studyGroupToJson((StudyGroup) result.result()), login);
+                    } catch (SQLException e) {
+                        resp = new Response(id, Status.FAILED, ResponseType.PlainText, "Error while getting owner login: " + e.getMessage(), null);
+                    }
                 }
                 case ItemList -> {
                     for (var r : ((ArrayList<StudyGroup>)result.result()).stream()
                             .sorted((a, b) -> a.getCoordinates().compareTo(b.getCoordinates()))
                             .toList()) {
-                        var rr = new Response(id, Status.PROCESSED, ResponseType.ItemStream, Converter.studyGroupToJson(r));
+                        Response rr;
+                        try {
+                            var login = Database.getInstance().getObjectOwner(r.getId());
+                            rr = new Response(id, Status.PROCESSED, ResponseType.ItemStream, Converter.studyGroupToJson(r), login);
+                        } catch (SQLException e) {
+                            rr = new Response(id, Status.FAILED, ResponseType.ItemStream, "Error while getting owner login: " + e.getMessage(), null);
+                        }
                         send(host, port, rr);
                     }
 //                    resp = new Response(id, Status.PROCESSED, ResponseType.ItemList,
@@ -211,7 +222,7 @@ public class Server {
                     for (var res : (ArrayList<CommandResult>) result.result()) {
                         sendResponseFromResult(id, host, port, res);
                     }
-                    resp = new Response(0, Status.PROCESSED, ResponseType.None, null);
+                    resp = new Response(0, Status.PROCESSED, ResponseType.None, null, null);
                 }
             }
         }
@@ -220,7 +231,7 @@ public class Server {
     }
 
     private void sendResponseUC(long id, InetAddress host, int port) {
-        var resp = new Response(id, Status.UNKNOWN_COMMAND, ResponseType.None, null);
+        var resp = new Response(id, Status.UNKNOWN_COMMAND, ResponseType.None, null, null);
         send(host, port, resp);
     }
 

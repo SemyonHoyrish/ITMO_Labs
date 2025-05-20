@@ -21,6 +21,10 @@ public class RemoveGreaterCommand implements Command {
         this.reader = reader;
     }
 
+    public RemoveGreaterCommand(StudyGroup group) {
+        this.group = group;
+    }
+
     @Override
     public void prepare() {
         group = reader.readStudyGroup();

@@ -31,4 +31,22 @@ public class PersonWrapper {
         p.setNationality(Country.valueOf(nationality.getValue()));
         return p;
     }
+
+    public void migrate(PersonWrapper other) {
+        if (!name.getValue().equals(other.name.getValue())) {
+            name.setValue(other.name.getValue());
+        }
+        if (!weight.getValue().equals(other.weight.getValue())) {
+            weight.setValue(other.weight.getValue());
+        }
+        if (!eyeColor.getValue().equals(other.eyeColor.getValue())) {
+            eyeColor.setValue(other.eyeColor.getValue());
+        }
+        if (!hairColor.getValue().equals(other.hairColor.getValue())) {
+            hairColor.setValue(other.hairColor.getValue());
+        }
+        if (!nationality.getValue().equals(other.nationality.getValue())) {
+            nationality.setValue(other.nationality.getValue());
+        }
+    }
 }

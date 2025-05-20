@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class StudyGroupWrapper {
+    public SimpleStringProperty owner = new SimpleStringProperty();
     public SimpleIntegerProperty id = new SimpleIntegerProperty();
     public SimpleStringProperty name = new SimpleStringProperty();
     public SimpleFloatProperty coordinatesX = new SimpleFloatProperty();
@@ -21,7 +22,8 @@ public class StudyGroupWrapper {
 
     public PersonWrapper groupAdmin;
 
-    public StudyGroupWrapper(StudyGroup value) {
+    public StudyGroupWrapper(StudyGroup value, String ownerLogin) {
+        owner.setValue(ownerLogin);
         id.setValue(value.getId());
         name.setValue(value.getName());
         coordinatesX.setValue(value.getCoordinates().getX());
@@ -51,5 +53,39 @@ public class StudyGroupWrapper {
         g.setGroupAdmin(groupAdmin.convert());
 
         return g;
+    }
+
+    public void migrate(StudyGroupWrapper other) {
+        if (!owner.getValue().equals(other.owner.getValue())) {
+            owner.setValue(other.owner.getValue());
+        }
+        if (!id.getValue().equals(other.id.getValue())) {
+            id.setValue(other.id.getValue());
+        }
+        if (!name.getValue().equals(other.name.getValue())) {
+            name.setValue(other.name.getValue());
+        }
+        if (!coordinatesX.getValue().equals(other.coordinatesX.getValue())) {
+            coordinatesX.setValue(other.coordinatesX.getValue());
+        }
+        if (!coordinatesY.getValue().equals(other.coordinatesY.getValue())) {
+            coordinatesY.setValue(other.coordinatesY.getValue());
+        }
+        if (!creationDate.getValue().equals(other.creationDate.getValue())) {
+            creationDate.setValue(other.creationDate.getValue());
+        }
+        if (!studentsCount.getValue().equals(other.studentsCount.getValue())) {
+            studentsCount.setValue(other.studentsCount.getValue());
+        }
+        if (!shouldBeExpelled.getValue().equals(other.shouldBeExpelled.getValue())) {
+            shouldBeExpelled.setValue(other.shouldBeExpelled.getValue());
+        }
+        if (!formOfEducation.getValue().equals(other.formOfEducation.getValue())) {
+            formOfEducation.setValue(other.formOfEducation.getValue());
+        }
+        if (!semester.getValue().equals(other.semester.getValue())) {
+            semester.setValue(other.semester.getValue());
+        }
+        groupAdmin.migrate(other.groupAdmin);
     }
 }

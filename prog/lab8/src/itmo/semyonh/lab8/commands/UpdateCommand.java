@@ -22,6 +22,10 @@ public class UpdateCommand implements Command {
         this.reader = reader;
     }
 
+    public UpdateCommand(StudyGroup group) {
+        this.newGroup = group;
+    }
+
     @Override
     public void prepare() {
         newGroup = reader.readStudyGroup();
@@ -63,7 +67,13 @@ public class UpdateCommand implements Command {
 
     @Override
     public Command with(String[] args) {
-        UpdateCommand n = new UpdateCommand(reader);
+        UpdateCommand n;
+        if (reader != null) {
+            n = new UpdateCommand(reader);
+        }
+        else {
+            n = new UpdateCommand(newGroup);
+        }
 
         try {
             n.id = Integer.parseInt(args[0]);

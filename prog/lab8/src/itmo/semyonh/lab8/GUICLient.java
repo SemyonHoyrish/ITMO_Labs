@@ -1,13 +1,12 @@
 package itmo.semyonh.lab8;
 
 import com.sun.javafx.scene.control.InputField;
-import itmo.semyonh.lab8.commands.AddCommand;
-import itmo.semyonh.lab8.commands.Command;
-import itmo.semyonh.lab8.commands.RetrieveCommand;
+import itmo.semyonh.lab8.commands.*;
 import itmo.semyonh.lab8.helpers.Converter;
 import itmo.semyonh.lab8.net.*;
 import itmo.semyonh.lab8.types.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,6 +19,7 @@ import javafx.util.StringConverter;
 import javafx.util.converter.*;
 
 import java.io.IOException;
+import java.rmi.dgc.Lease;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.time.Instant;
@@ -41,8 +41,8 @@ public class GUICLient extends Application {
     }
 
     private Client client;
-    private long lastRequestID;
-    private long lastRetrieveID;
+    private volatile long lastRequestID;
+    private volatile long lastRetrieveID;
     private ArrayList<StudyGroupWrapper> pollingData;
     private ObservableList<StudyGroupWrapper> data;
     private volatile int pollInterval = 1000;
@@ -81,14 +81,17 @@ public class GUICLient extends Application {
     }
     private Pane createStudyGroupInput(StudyGroupWrapper base, GUICommandCallback<StudyGroupWrapper> callback) {
         if (base == null) {
-            base = new StudyGroupWrapper(new StudyGroup());
+            base = new StudyGroupWrapper(new StudyGroup(), "");
+            base.id.setValue(0);
         }
 
         var p = new VBox();
 
         var id = new HBox();
         var idLabel = new Label("ID: ");
-        var idValue = new Label(base.id.getValue().toString());
+        var idValue = new TextField();
+        idValue.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
+        idValue.setText(base.id.getValue().toString());
         id.getChildren().addAll(idLabel, idValue);
 
         var name = new HBox();
@@ -98,14 +101,16 @@ public class GUICLient extends Application {
 
         var coordX = new HBox();
         var coordXLabel = new Label("Coordinates.x: ");
-        var coordXValue = new TextField(base.coordinatesX.toString());
+        var coordXValue = new TextField();
         coordXValue.setTextFormatter(new TextFormatter<>(new FloatStringConverter()));
+        coordXValue.setText(base.coordinatesX.getValue().toString());
         coordX.getChildren().addAll(coordXLabel, coordXValue);
 
         var coordY = new HBox();
         var coordYLabel = new Label("Coordinates.y: ");
-        var coordYValue = new TextField(base.coordinatesY.toString());
+        var coordYValue = new TextField();
         coordYValue.setTextFormatter(new TextFormatter<>(new DoubleStringConverter()));
+        coordYValue.setText(base.coordinatesY.getValue().toString());
         coordY.getChildren().addAll(coordYLabel, coordYValue);
 
         var date = new HBox();
@@ -115,26 +120,30 @@ public class GUICLient extends Application {
 
         var studentsCount = new HBox();
         var studentsCountLabel = new Label("Student count: ");
-        var studentsCountValue = new TextField(base.studentsCount.toString());
+        var studentsCountValue = new TextField();
         studentsCountValue.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        studentsCountValue.setText(base.studentsCount.getValue().toString());
         studentsCount.getChildren().addAll(studentsCountLabel, studentsCountValue);
 
         var shouldBeExpelled = new HBox();
         var shouldBeExpelledLabel = new Label("Should be expelled: ");
-        var shouldBeExpelledValue = new TextField(base.shouldBeExpelled.toString());
+        var shouldBeExpelledValue = new TextField();
         shouldBeExpelledValue.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        shouldBeExpelledValue.setText(base.shouldBeExpelled.getValue().toString());
         shouldBeExpelled.getChildren().addAll(shouldBeExpelledLabel, shouldBeExpelledValue);
 
         var formOfEducation = new HBox();
         var formOfEducationLabel = new Label("Form of Education: ");
         var formOfEducationValue = new ComboBox<FormOfEducation>();
         formOfEducationValue.getItems().addAll(FormOfEducation.values());
+        formOfEducationValue.setValue(base.formOfEducation.getValue().isEmpty() ? null : FormOfEducation.valueOf(base.formOfEducation.getValue()));
         formOfEducation.getChildren().addAll(formOfEducationLabel, formOfEducationValue);
 
         var semester = new HBox();
         var semesterLabel = new Label("Semester: ");
         var semesterValue = new ComboBox<Semester>();
         semesterValue.getItems().addAll(Semester.values());
+        semesterValue.setValue(base.semester.getValue().isEmpty() ? null : Semester.valueOf(base.semester.getValue()));
         semester.getChildren().addAll(semesterLabel, semesterValue);
 
 
@@ -147,14 +156,16 @@ public class GUICLient extends Application {
 
         var gaWeight = new HBox();
         var gaWeightLabel = new Label("Weight: ");
-        var gaWeightValue = new TextField(base.groupAdmin.weight.toString());
+        var gaWeightValue = new TextField();
         gaWeightValue.setTextFormatter(new TextFormatter<>(new DoubleStringConverter()));
+        gaWeightValue.setText(base.groupAdmin.weight.getValue().toString());
         gaWeight.getChildren().addAll(gaWeightLabel, gaWeightValue);
 
         var gaEyeColor = new HBox();
         var gaEyeColorLabel = new Label("EyeColor: ");
         var gaEyeColorValue = new ComboBox<Color>();
         gaEyeColorValue.getItems().addAll(Color.values());
+        gaEyeColorValue.setValue(base.groupAdmin.eyeColor.getValue().isEmpty() ? null : Color.valueOf(base.groupAdmin.eyeColor.getValue()));
         gaEyeColor.getChildren().addAll(gaEyeColorLabel, gaEyeColorValue);
 
         var gaHairColor = new HBox();
@@ -162,12 +173,14 @@ public class GUICLient extends Application {
         var gaHairColorValue = new ComboBox<Color>();
         gaHairColorValue.getItems().addAll(Color.values());
         gaHairColorValue.getItems().add(null);
+        gaHairColorValue.setValue(base.groupAdmin.hairColor.getValue().isEmpty() ? null : Color.valueOf(base.groupAdmin.hairColor.getValue()));
         gaHairColor.getChildren().addAll(gaHairColorLabel, gaHairColorValue);
 
         var gaNationality = new HBox();
         var gaNationalityLabel = new Label("Nationality: ");
         var gaNationalityValue = new ComboBox<Country>();
         gaNationalityValue.getItems().addAll(Country.values());
+        gaNationalityValue.setValue(base.groupAdmin.nationality.getValue().isEmpty() ? null : Country.valueOf(base.groupAdmin.nationality.getValue()));
         gaNationality.getChildren().addAll(gaNationalityLabel, gaNationalityValue);
 
 
@@ -198,6 +211,7 @@ public class GUICLient extends Application {
             StudyGroupWrapper w = null;
             try {
                 var g = new StudyGroup();
+                g.setId(Integer.parseInt(idValue.getText()));
                 g.setName(nameValue.getText());
                 var c = new Coordinates();
                 c.setX(Float.parseFloat(coordXValue.getText()));
@@ -215,13 +229,14 @@ public class GUICLient extends Application {
                 pers.setHairColor(gaHairColorValue.getValue());
                 pers.setNationality(gaNationalityValue.getValue());
                 g.setGroupAdmin(pers);
-                w = new StudyGroupWrapper(g);
+                w = new StudyGroupWrapper(g, "");
             } catch (IllegalArgumentException ex) {
-                showNotification("Bad value for add command: " + ex.getMessage()); // trn
+                showNotification("Bad value: " + ex.getMessage()); // trn
                 return;
             }
 
             callback.run(w);
+            modalWindowStage.hide();
         });
 
         return p;
@@ -230,11 +245,11 @@ public class GUICLient extends Application {
     private void initMenuBarCommands(Menu menu) {
         var add = new MenuItem("add");
         add.setOnAction(e -> {
-            System.out.println("HELLO");
             var p = createStudyGroupInput(null, (v) -> {
                 try {
-                    send(new AddCommand(v.convert()));
-                    System.out.println(v.convert().toString());
+                    send(new AddCommand(v.convert()), (eee) -> {
+                        System.out.println("sdhfkjsdfhksjdhfkjds");
+                    });
                 } catch (IllegalArgumentException ex) {
                     showNotification("Error: " + ex.getMessage());
                 }
@@ -245,8 +260,160 @@ public class GUICLient extends Application {
             modalWindowStage.show();
         });
 
+        var addIfMin = new MenuItem("add_if_min");
+        addIfMin.setOnAction(e -> {
+            var p = createStudyGroupInput(null, (v) -> {
+                try {
+                    send(new AddIfMinCommand(v.convert()));
+                } catch (IllegalArgumentException ex) {
+                    showNotification("Error: " + ex.getMessage());
+                }
+            });
+            var scene = new Scene(p, 400, 600);
+            modalWindowStage.setTitle("command -> add_if_min");
+            modalWindowStage.setScene(scene);
+            modalWindowStage.show();
+        });
 
-        menu.getItems().addAll(add);
+        var clear = new MenuItem("clear");
+        clear.setOnAction(e -> {
+            send(new ClearCommand());
+        });
+
+        var help = new MenuItem("help");
+        help.setOnAction(e -> {
+            var p = new VBox();
+            p.getChildren().add(new Label(new AddCommand((StudyGroup) null).getDescription()));
+            p.getChildren().add(new Label(new AddIfMinCommand((StudyGroup) null).getDescription()));
+            p.getChildren().add(new Label(new ClearCommand().getDescription()));
+            p.getChildren().add(new Label(new HelpCommand(null).getDescription()));
+            p.getChildren().add(new Label(new InfoCommand(null).getDescription()));
+            p.getChildren().add(new Label(new MaxByCoordsCommand().getDescription()));
+            p.getChildren().add(new Label(new PrintFieldDescFormOfEducationCommand().getDescription()));
+            p.getChildren().add(new Label(new PrintUniqueShouldBeExpelledCommand().getDescription()));
+            p.getChildren().add(new Label(new RemoveByIdCommand().getDescription()));
+            p.getChildren().add(new Label(new RemoveGreaterCommand((StudyGroup) null).getDescription()));
+            p.getChildren().add(new Label(new UpdateCommand((StudyGroup) null).getDescription()));
+            var s = new Scene(p, 600, 400);
+            modalWindowStage.setTitle("command -> help");
+            modalWindowStage.setScene(s);
+            modalWindowStage.show();
+        });
+
+
+        var info = new MenuItem("info");
+        info.setOnAction(e -> {
+            send(new InfoCommand(null), (r) -> {
+                if (r.status() == Status.PROCESSED) {
+                    showNotification(r.response());
+                } else {
+                    showNotification("info error: " + r.response());
+                }
+            });
+        });
+
+        var maxByCoords = new MenuItem("max_by_coords");
+        maxByCoords.setOnAction(e -> {
+            send(new MaxByCoordsCommand(), (r) -> {
+                if (r.status() == Status.PROCESSED) {
+                    updateCommand(Converter.studyGroupFromJson(r.response()).getId());
+                } else {
+                    showNotification("error: " + r.response());
+                }
+            });
+        });
+
+        var pfdfoe = new MenuItem("field_desc_form");
+        pfdfoe.setOnAction(e -> {
+            send(new PrintFieldDescFormOfEducationCommand(), (r) -> {
+                if (r.status() == Status.PROCESSED) {
+                    showNotification(r.response());
+                } else {
+                    showNotification("error: " + r.response());
+                }
+            });
+        });
+
+        var pusbe = new MenuItem("unique_should_be_expelled");
+        pusbe.setOnAction(e -> {
+            send(new PrintUniqueShouldBeExpelledCommand(), r -> {
+                if (r.status() == Status.PROCESSED) {
+                    showNotification(r.response());
+                } else {
+                    showNotification("error: " + r.response());
+                }
+            });
+        });
+
+        var removeByID = new MenuItem("remove_by_id");
+        removeByID.setOnAction(e -> {
+            var p = new VBox();
+            var pp = new HBox();
+            var l = new Label("ID: ");
+            var input = new TextField("0");
+            input.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
+            pp.getChildren().addAll(l, input);
+            var btn = new Button("remove");
+            btn.setOnAction((ee) -> {
+                    send(new RemoveByIdCommand().with(new String[]{input.getText()}), (eee) -> {
+                        if (eee.status() == Status.FAILED) {
+                            showNotification("remove by id failed:" + eee.response());
+                        }
+                    });
+                    modalWindowStage.hide();
+                }
+            );
+            p.getChildren().addAll(pp, btn);
+            var s = new Scene(p, 200, 100);
+            modalWindowStage.setTitle("command -> remove_by_id");
+            modalWindowStage.setScene(s);
+            modalWindowStage.show();
+        });
+
+        var removeGreater = new MenuItem("remove_greater");
+        removeGreater.setOnAction(e -> {
+            var p = createStudyGroupInput(null, (v) -> {
+                try {
+                    send(new RemoveGreaterCommand(v.convert()));
+                } catch (IllegalArgumentException ex) {
+                    showNotification("Error: " + ex.getMessage());
+                }
+            });
+            var scene = new Scene(p, 400, 600);
+            modalWindowStage.setTitle("command -> remove_greater");
+            modalWindowStage.setScene(scene);
+            modalWindowStage.show();
+        });
+
+        var update = new MenuItem("update");
+        update.setOnAction(e -> {
+            updateCommand(0);
+        });
+
+
+        menu.getItems().addAll(add, addIfMin, clear, help, info, maxByCoords, pfdfoe, pusbe, removeByID, removeGreater, update);
+    }
+
+    private void updateCommand(int id) {
+        StudyGroupWrapper base = null;
+        if (id > 0) {
+            for (var d : data) {
+                if (d.id.get() == id) {
+                    base = d;
+                }
+            }
+        }
+        var p = createStudyGroupInput(base, (v) -> {
+            try {
+                send(new UpdateCommand(v.convert()).with(new String[] { v.id.getValue().toString() }));
+            } catch (IllegalArgumentException ex) {
+                showNotification("Error: " + ex.getMessage());
+            }
+        });
+        var scene = new Scene(p, 400, 600);
+        modalWindowStage.setTitle("command -> update");
+        modalWindowStage.setScene(scene);
+        modalWindowStage.show();
     }
 
     private void initMenuBar(Pane pane) {
@@ -270,9 +437,9 @@ public class GUICLient extends Application {
             {
                 var p = new VBox();
 
-                var login = new TextField(credentials.login());
+                var login = new TextField(new String(credentials.login()));
                 var pass = new PasswordField();
-                pass.setText(credentials.password());
+                pass.setText(new String(credentials.password()));
 
                 var save = new Button("save");
                 save.setOnAction((e) -> {
@@ -309,11 +476,16 @@ public class GUICLient extends Application {
             TableRow<StudyGroupWrapper> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
                 if (e.getClickCount() == 2 && !row.isEmpty()) {
-                    // TODO
+                    if (row.getItem().owner.getValue().equals(credentials.login())) {
+                        updateCommand(row.getItem().id.get());
+                    }
                 }
             });
             return row;
         });
+
+        var owner = new TableColumn<StudyGroupWrapper, String>("owner");
+        owner.setCellValueFactory(cd -> cd.getValue().owner);
 
         var id = new TableColumn<StudyGroupWrapper, Integer>("id");
         id.setCellValueFactory((cd) -> cd.getValue().id.asObject());
@@ -345,7 +517,7 @@ public class GUICLient extends Application {
         var admin_nationality = new TableColumn<StudyGroupWrapper, String>("admin_nationality");
         admin_nationality.setCellValueFactory(cd -> cd.getValue().groupAdmin.nationality);
 
-        tv.getColumns().addAll(id, name, coordinatesX, coordinatesY, creationDate, studentsCount, shouldBeExpelled, formOfEducation,
+        tv.getColumns().addAll(owner, id, name, coordinatesX, coordinatesY, creationDate, studentsCount, shouldBeExpelled, formOfEducation,
                                     admin_name, admin_weight, admin_hair_color, admin_nationality);
         tv.visibleProperty().bind(useVisualisationViewProperty.not());
         tv.setItems(data);
@@ -378,7 +550,6 @@ public class GUICLient extends Application {
 
                 send(new RetrieveCommand());
                 lastRetrieveID = lastRequestID - 1;
-
                 try {
                     Thread.sleep(pollInterval);
                 } catch (InterruptedException ignored) {
@@ -435,6 +606,11 @@ public class GUICLient extends Application {
             if (!s.contains(i.id.get())) {
                 data.add(i);
             } else {
+                for (var d : data) {
+                    if (d.id.get() == i.id.get()) {
+                        d.migrate(i);
+                    }
+                }
                 s.remove(i.id.get());
             }
         }
@@ -443,21 +619,35 @@ public class GUICLient extends Application {
     }
 
     private void send(Command c) {
+        long id = lastRequestID;
         client.send(new Request(lastRequestID++, c.getName(), Converter.commandToJson(c), credentials));
-        waitingForResponse.put(lastRequestID - 1, Instant.now().getEpochSecond());
+        waitingForResponse.put(lastRequestID, Instant.now().getEpochSecond());
+    }
+    private void send(Command c, CommandResultCallback callback) {
+        long id = lastRequestID;
+        client.send(new Request(lastRequestID++, c.getName(), Converter.commandToJson(c), credentials));
+        waitingForResponse.put(id, Instant.now().getEpochSecond());
+        commandsCallbacks.put(id, callback);
     }
 
     private void receive(Response r) {
         if (!waitingForResponse.containsKey(r.requestID())) return;
 
         if (commandsCallbacks.containsKey(r.requestID())) {
-            commandsCallbacks.get(r.requestID()).run(r);
+            var callback = commandsCallbacks.get(r.requestID());
+            Platform.runLater(() -> {
+                callback.run(r);
+            });
             commandsCallbacks.remove(r.requestID());
             waitingForResponse.remove(r.requestID());
         } else {
-            if (r.status() == Status.PROCESSED && r.type() == ResponseType.ItemStream && r.requestID() == lastRetrieveID) {
-                var item = Converter.studyGroupFromJson(r.response());
-                pollingData.add(new StudyGroupWrapper(item));
+            if (r.type() == ResponseType.ItemStream) {
+                if (r.status() == Status.FAILED) {
+                    System.out.println("ItemStream failed package: " + r.response());
+                } else if (r.status() == Status.PROCESSED && r.requestID() == lastRetrieveID) {
+                    var item = Converter.studyGroupFromJson(r.response());
+                    pollingData.add(new StudyGroupWrapper(item, r.objectOwnerLogin() != null ? r.objectOwnerLogin() : "<unknown>"));
+                }
             }
         }
     }

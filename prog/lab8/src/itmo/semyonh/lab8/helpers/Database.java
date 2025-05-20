@@ -269,7 +269,7 @@ public class Database {
         var conn = dataSource.getConnection();
         conn.setAutoCommit(false);
 
-        if (!confirmOwnership(originID, accountID, conn)) {
+        if (!confirmOwnership(accountID, originID, conn)) {
             conn.close();
             return false;
         }
@@ -408,5 +408,25 @@ public class Database {
         st.close();
         conn.close();
         return res_id;
+    }
+
+    public String getObjectOwner(int studyGroupID) throws SQLException {
+        var conn = dataSource.getConnection();
+
+        var st = conn.prepareStatement("SELECT account.login FROM ownership JOIN account ON (account.id = ownership.account_id) WHERE ownership.object_id = ?");
+        st.setInt(1, studyGroupID);
+        var res = st.executeQuery();
+        if (!res.next()) {
+            res.close();
+            st.close();
+            conn.close();
+            return null;
+        }
+
+        var result = res.getString("login");
+        res.close();
+        st.close();
+        conn.close();
+        return result;
     }
 }
