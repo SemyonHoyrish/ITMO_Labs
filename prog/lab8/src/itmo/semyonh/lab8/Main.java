@@ -12,13 +12,15 @@ public class Main {
         if (mode != null && mode.equals("server")) {
             var server = new Server(port);
             server.run();
-        } else {
+        } else if (mode != null && mode.equals("cli")) {
             var client = new Client(host, port);
             try {
                 client.run();
             } catch (InterruptedException e) {
                 System.out.println("Client was interrupted");
             }
+        } else {
+            GUICLient.launch_gui();
         }
     }
 }
