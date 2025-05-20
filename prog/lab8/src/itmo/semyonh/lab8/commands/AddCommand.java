@@ -20,6 +20,10 @@ public class AddCommand implements Command {
         this.reader = reader;
     }
 
+    public AddCommand(StudyGroup studyGroup) {
+        this.studyGroup = studyGroup;
+    }
+
     @Override
     public void prepare() {
         studyGroup = reader.readStudyGroup();

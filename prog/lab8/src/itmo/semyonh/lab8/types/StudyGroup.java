@@ -21,6 +21,9 @@ public class StudyGroup implements Comparable<StudyGroup> {
 
     public StudyGroup() {
         regenerate();
+        name = "";
+        coordinates = new Coordinates();
+        groupAdmin = new Person();
     }
 
     public void regenerate() {

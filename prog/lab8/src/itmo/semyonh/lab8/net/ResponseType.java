@@ -5,4 +5,5 @@ public enum ResponseType {
     PlainText,
     Item,
     ItemList,
+    ItemStream,
 }

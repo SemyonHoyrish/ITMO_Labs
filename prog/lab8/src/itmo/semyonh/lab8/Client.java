@@ -20,18 +20,29 @@ public class Client {
     private DatagramChannel channel;
     private long commandID = 0;
     private Credentials credentials;
+    private boolean initialized = false;
 
     public Client(String host, int port) {
         serverAddress = new InetSocketAddress(host, port);
     }
 
-    public void run() throws InterruptedException {
+    public boolean init() {
         try {
             channel = DatagramChannel.open();
             channel.configureBlocking(false);
         } catch (IOException e) {
             System.out.println("Cannot open channel: " + e.getMessage());
-            return;
+            return false;
+        }
+        initialized = true;
+        return true;
+    }
+
+    public void run() throws InterruptedException {
+        if (!initialized) {
+            if (!init()) {
+                return;
+            }
         }
 
         CommandManager commandManager = new CommandManager();
@@ -81,23 +92,9 @@ public class Client {
         }).start();
 
         while (true) {
-            ByteBuffer buff = ByteBuffer.allocate(64 * 1024);
-            SocketAddress sa = null;
+            var resp = recieve();
 
-            try {
-                sa = channel.receive(buff);
-            } catch (IOException e) {
-                System.out.println("Error receiving response: " + e.getMessage());
-            }
-
-            if (sa != null) {
-                buff.flip();
-                var bytes = new byte[buff.remaining()];
-                buff.get(bytes);
-                String content = new String(bytes);
-
-                Response resp = Converter.responseFromJson(content);
-
+            if (resp != null) {
                 if (waitingForResponse.containsKey(resp.requestID())) {
                     var req = waitingForResponse.get(resp.requestID());
                     System.out.println("Response for '" + req.getName() + "' received, status: " + resp.status());
@@ -118,6 +115,29 @@ public class Client {
         }
     }
 
+    Response recieve() {
+        ByteBuffer buff = ByteBuffer.allocate(64 * 1024);
+        SocketAddress sa = null;
+
+        try {
+            sa = channel.receive(buff);
+        } catch (IOException e) {
+            System.out.println("Error receiving response: " + e.getMessage());
+        }
+
+        if (sa != null) {
+            buff.flip();
+            var bytes = new byte[buff.remaining()];
+            buff.get(bytes);
+            String content = new String(bytes);
+
+            Response resp = Converter.responseFromJson(content);
+            return resp;
+        }
+
+        return null;
+    }
+
     private boolean splitExecuteCommand(Command command, HashMap<Long, Command> wfr) {
         if (command.getClass() == ExecuteScriptCommand.class) {
             for (var c : ((ExecuteScriptCommand) command).commandsToExecute) {
@@ -133,7 +153,7 @@ public class Client {
         return false;
     }
 
-    private boolean send(Request r) {
+    boolean send(Request r) {
         try {
             channel.send(ByteBuffer.wrap(Converter.requestToJson(r).getBytes()), serverAddress);
             return true;

@@ -102,6 +102,7 @@ public class Server {
         commandManager.registerCommand(new PrintUniqueShouldBeExpelledCommand());
         commandManager.registerCommand(new PrintFieldDescFormOfEducationCommand());
         commandManager.registerCommand(new RegisterAccountCommand());
+        commandManager.registerCommand(new RetrieveCommand());
 
         try {
             var vals = Database.getInstance().retrieveAll();
@@ -190,14 +191,21 @@ public class Server {
                     resp = new Response(id, Status.PROCESSED, ResponseType.Item, Converter.studyGroupToJson((StudyGroup) result.result()));
                 }
                 case ItemList -> {
-                    resp = new Response(id, Status.PROCESSED, ResponseType.ItemList,
-                            Converter.studyGroupListToJson(
-                                    new ArrayList<>(((ArrayList<StudyGroup>) result.result())
-                                            .stream()
-                                            .sorted((a, b) -> a.getCoordinates().compareTo(b.getCoordinates()))
-                                            .toList())
-                            )
-                    );
+                    for (var r : ((ArrayList<StudyGroup>)result.result()).stream()
+                            .sorted((a, b) -> a.getCoordinates().compareTo(b.getCoordinates()))
+                            .toList()) {
+                        var rr = new Response(id, Status.PROCESSED, ResponseType.ItemStream, Converter.studyGroupToJson(r));
+                        send(host, port, rr);
+                    }
+//                    resp = new Response(id, Status.PROCESSED, ResponseType.ItemList,
+//                            Converter.studyGroupListToJson(
+//                                    new ArrayList<>(((ArrayList<StudyGroup>) result.result())
+//                                            .stream()
+//                                            .sorted((a, b) -> a.getCoordinates().compareTo(b.getCoordinates()))
+//                                            .toList())
+//                            )
+//                    );
+                    return;
                 }
                 case ResultList -> {
                     for (var res : (ArrayList<CommandResult>) result.result()) {

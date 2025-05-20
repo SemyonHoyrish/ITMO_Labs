@@ -1,39 +1,299 @@
 package itmo.semyonh.lab8;
 
-import itmo.semyonh.lab8.types.StudyGroup;
+import com.sun.javafx.scene.control.InputField;
+import itmo.semyonh.lab8.commands.AddCommand;
+import itmo.semyonh.lab8.commands.Command;
+import itmo.semyonh.lab8.commands.RetrieveCommand;
+import itmo.semyonh.lab8.helpers.Converter;
+import itmo.semyonh.lab8.net.*;
+import itmo.semyonh.lab8.types.*;
 import javafx.application.Application;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Pair;
+import javafx.util.StringConverter;
+import javafx.util.converter.*;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.function.UnaryOperator;
 
+// TODO:
+// spcify host & port in gui
+// add owner field
 public class GUICLient extends Application {
+    interface CommandResultCallback {
+        void run(Response r);
+    }
+
     private Client client;
+    private long lastRequestID;
+    private long lastRetrieveID;
+    private ArrayList<StudyGroupWrapper> pollingData;
+    private ObservableList<StudyGroupWrapper> data;
+    private volatile int pollInterval = 1000;
+    private Credentials credentials = new Credentials("test", "test2");
+    private HashMap<Long, Long> waitingForResponse = new HashMap<>();
+    private HashMap<Long, CommandResultCallback> commandsCallbacks = new HashMap<>();
+
+//    private TableView tableView;
+    private Stage modalWindowStage;
+    private Stage notificationWindowStage;
+
+    private volatile boolean executing = true;
+    private Thread threadPoll;
+    private Thread threadRetrieve;
+
 
     //App runtime config
-    private boolean useVisualisationView = false;
+    private SimpleBooleanProperty useVisualisationViewProperty = new SimpleBooleanProperty(false);
+
+    private void showNotification(String text) {
+        var p = new VBox();
+        var l = new Label(text);
+        var b = new Button("close");
+        b.setOnAction(e -> {
+            notificationWindowStage.hide();
+        });
+        p.getChildren().addAll(l, b);
+        Scene s = new Scene(p, 600, 100);
+        notificationWindowStage.setTitle("Notification");
+        notificationWindowStage.setScene(s);
+        notificationWindowStage.show();
+    }
+
+    interface GUICommandCallback<V> {
+        void run(V v);
+    }
+    private Pane createStudyGroupInput(StudyGroupWrapper base, GUICommandCallback<StudyGroupWrapper> callback) {
+        if (base == null) {
+            base = new StudyGroupWrapper(new StudyGroup());
+        }
+
+        var p = new VBox();
+
+        var id = new HBox();
+        var idLabel = new Label("ID: ");
+        var idValue = new Label(base.id.getValue().toString());
+        id.getChildren().addAll(idLabel, idValue);
+
+        var name = new HBox();
+        var nameLabel = new Label("Name: ");
+        var nameValue = new TextField(base.name.getValue());
+        name.getChildren().addAll(nameLabel, nameValue);
+
+        var coordX = new HBox();
+        var coordXLabel = new Label("Coordinates.x: ");
+        var coordXValue = new TextField(base.coordinatesX.toString());
+        coordXValue.setTextFormatter(new TextFormatter<>(new FloatStringConverter()));
+        coordX.getChildren().addAll(coordXLabel, coordXValue);
+
+        var coordY = new HBox();
+        var coordYLabel = new Label("Coordinates.y: ");
+        var coordYValue = new TextField(base.coordinatesY.toString());
+        coordYValue.setTextFormatter(new TextFormatter<>(new DoubleStringConverter()));
+        coordY.getChildren().addAll(coordYLabel, coordYValue);
+
+        var date = new HBox();
+        var dateLabel = new Label("Date: ");
+        var dateValue = new Label(base.creationDate.getValue());
+        date.getChildren().addAll(dateLabel, dateValue);
+
+        var studentsCount = new HBox();
+        var studentsCountLabel = new Label("Student count: ");
+        var studentsCountValue = new TextField(base.studentsCount.toString());
+        studentsCountValue.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        studentsCount.getChildren().addAll(studentsCountLabel, studentsCountValue);
+
+        var shouldBeExpelled = new HBox();
+        var shouldBeExpelledLabel = new Label("Should be expelled: ");
+        var shouldBeExpelledValue = new TextField(base.shouldBeExpelled.toString());
+        shouldBeExpelledValue.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        shouldBeExpelled.getChildren().addAll(shouldBeExpelledLabel, shouldBeExpelledValue);
+
+        var formOfEducation = new HBox();
+        var formOfEducationLabel = new Label("Form of Education: ");
+        var formOfEducationValue = new ComboBox<FormOfEducation>();
+        formOfEducationValue.getItems().addAll(FormOfEducation.values());
+        formOfEducation.getChildren().addAll(formOfEducationLabel, formOfEducationValue);
+
+        var semester = new HBox();
+        var semesterLabel = new Label("Semester: ");
+        var semesterValue = new ComboBox<Semester>();
+        semesterValue.getItems().addAll(Semester.values());
+        semester.getChildren().addAll(semesterLabel, semesterValue);
+
+
+        var groupAdminLabel = new Label("Group admin: ");
+
+        var gaName = new HBox();
+        var gaNameLabel = new Label("Name: ");
+        var gaNameValue = new TextField(base.groupAdmin.name.getValue());
+        gaName.getChildren().addAll(gaNameLabel, gaNameValue);
+
+        var gaWeight = new HBox();
+        var gaWeightLabel = new Label("Weight: ");
+        var gaWeightValue = new TextField(base.groupAdmin.weight.toString());
+        gaWeightValue.setTextFormatter(new TextFormatter<>(new DoubleStringConverter()));
+        gaWeight.getChildren().addAll(gaWeightLabel, gaWeightValue);
+
+        var gaEyeColor = new HBox();
+        var gaEyeColorLabel = new Label("EyeColor: ");
+        var gaEyeColorValue = new ComboBox<Color>();
+        gaEyeColorValue.getItems().addAll(Color.values());
+        gaEyeColor.getChildren().addAll(gaEyeColorLabel, gaEyeColorValue);
+
+        var gaHairColor = new HBox();
+        var gaHairColorLabel = new Label("HairColor: ");
+        var gaHairColorValue = new ComboBox<Color>();
+        gaHairColorValue.getItems().addAll(Color.values());
+        gaHairColorValue.getItems().add(null);
+        gaHairColor.getChildren().addAll(gaHairColorLabel, gaHairColorValue);
+
+        var gaNationality = new HBox();
+        var gaNationalityLabel = new Label("Nationality: ");
+        var gaNationalityValue = new ComboBox<Country>();
+        gaNationalityValue.getItems().addAll(Country.values());
+        gaNationality.getChildren().addAll(gaNationalityLabel, gaNationalityValue);
+
+
+        var spacer = new Region();
+        spacer.setPrefHeight(20);
+
+        p.getChildren().addAll(id, name, coordX, coordY, date,
+                    studentsCount, shouldBeExpelled,
+                    formOfEducation, semester, spacer, groupAdminLabel,
+                gaName, gaWeight, gaEyeColor, gaHairColor, gaNationality);
+
+        for (var ch : p.getChildren()) {
+            if (ch instanceof HBox) {
+                for (var chch : ((HBox) ch).getChildren()) {
+                    if (chch instanceof Control) {
+                        ((Control) chch).setMinWidth(200);
+                    }
+                }
+            }
+        }
+
+        var execute = new Button("execute");
+        p.getChildren().addAll(execute);
+
+        var originDate = Date.from(ZonedDateTime.parse(base.creationDate.getValue(), DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy")).toInstant());
+
+        execute.setOnAction((e) -> {
+            StudyGroupWrapper w = null;
+            try {
+                var g = new StudyGroup();
+                g.setName(nameValue.getText());
+                var c = new Coordinates();
+                c.setX(Float.parseFloat(coordXValue.getText()));
+                c.setY(Double.parseDouble(coordYValue.getText()));
+                g.setCoordinates(c);
+                g.setCreationDate(originDate);
+                g.setStudentsCount(Integer.parseInt(studentsCountValue.getText()));
+                g.setShouldBeExpelled(Long.parseLong(shouldBeExpelledValue.getText()));
+                g.setFormOfEducation(formOfEducationValue.getValue());
+                g.setSemester(semesterValue.getValue());
+                var pers = new Person();
+                pers.setName(gaNameValue.getText());
+                pers.setWeight(Double.parseDouble(gaWeightValue.getText()));
+                pers.setEyeColor(gaEyeColorValue.getValue());
+                pers.setHairColor(gaHairColorValue.getValue());
+                pers.setNationality(gaNationalityValue.getValue());
+                g.setGroupAdmin(pers);
+                w = new StudyGroupWrapper(g);
+            } catch (IllegalArgumentException ex) {
+                showNotification("Bad value for add command: " + ex.getMessage()); // trn
+                return;
+            }
+
+            callback.run(w);
+        });
+
+        return p;
+    }
+
+    private void initMenuBarCommands(Menu menu) {
+        var add = new MenuItem("add");
+        add.setOnAction(e -> {
+            System.out.println("HELLO");
+            var p = createStudyGroupInput(null, (v) -> {
+                try {
+                    send(new AddCommand(v.convert()));
+                    System.out.println(v.convert().toString());
+                } catch (IllegalArgumentException ex) {
+                    showNotification("Error: " + ex.getMessage());
+                }
+            });
+            var scene = new Scene(p, 400, 600);
+            modalWindowStage.setTitle("command -> add");
+            modalWindowStage.setScene(scene);
+            modalWindowStage.show();
+        });
+
+
+        menu.getItems().addAll(add);
+    }
 
     private void initMenuBar(Pane pane) {
 
         var view = new Menu("view");
         var command = new Menu("command");
-        var configuration = new Menu("command");
+        var configuration = new Menu("configuration");
 
         {//view
             var tv = new MenuItem("use table view");
-            tv.setOnAction((e) -> { useVisualisationView = false; });
+            tv.setOnAction((e) -> { useVisualisationViewProperty.setValue(false); });
             var vv = new MenuItem("use visualisation view");
-            vv.setOnAction((e) -> { useVisualisationView = true; });
+            vv.setOnAction((e) -> { useVisualisationViewProperty.setValue(true); });
             view.getItems().addAll(tv, vv);
         }
         {//command
-
+            initMenuBarCommands(command);
         }
         {//configuration
+            var acc = new MenuItem("account");
+            {
+                var p = new VBox();
 
+                var login = new TextField(credentials.login());
+                var pass = new PasswordField();
+                pass.setText(credentials.password());
+
+                var save = new Button("save");
+                save.setOnAction((e) -> {
+                    credentials = new Credentials(login.getText(), pass.getText());
+                });
+
+                var registerAccount = new Button("register-account");
+                registerAccount.setOnAction((e) -> {
+                });
+
+                p.getChildren().addAll(login, pass, save);
+
+                var accScene = new Scene(p, 300, 200);
+
+                acc.setOnAction((e) -> {
+                    modalWindowStage.setTitle("configuration -> account");
+                    modalWindowStage.setScene(accScene);
+                    modalWindowStage.show();
+                });
+            }
+            configuration.getItems().add(acc);
         }
 
         var mb = new MenuBar(view, command, configuration);
@@ -43,7 +303,54 @@ public class GUICLient extends Application {
     }
 
     private void initTableView(Pane pane) {
+        var tv = new TableView<StudyGroupWrapper>();
 
+        tv.setRowFactory(r -> {
+            TableRow<StudyGroupWrapper> row = new TableRow<>();
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && !row.isEmpty()) {
+                    // TODO
+                }
+            });
+            return row;
+        });
+
+        var id = new TableColumn<StudyGroupWrapper, Integer>("id");
+        id.setCellValueFactory((cd) -> cd.getValue().id.asObject());
+        var name = new TableColumn<StudyGroupWrapper, String>("name");
+        name.setCellValueFactory((cd) -> cd.getValue().name);
+        var coordinatesX = new TableColumn<StudyGroupWrapper, Float>("coordinates.x");
+        var coordinatesY = new TableColumn<StudyGroupWrapper, Double>("coordinates.y");
+        coordinatesX.setCellValueFactory(cd -> cd.getValue().coordinatesX.asObject());
+        coordinatesY.setCellValueFactory(cd -> cd.getValue().coordinatesY.asObject());
+        var creationDate = new TableColumn<StudyGroupWrapper, String>("creation_date");
+        creationDate.setCellValueFactory((cd) -> cd.getValue().creationDate);
+        var studentsCount = new TableColumn<StudyGroupWrapper, Long>("students_count");
+        studentsCount.setCellValueFactory(cd -> cd.getValue().studentsCount.asObject());
+        var shouldBeExpelled = new TableColumn<StudyGroupWrapper, Long>("should_be_expelled");
+        shouldBeExpelled.setCellValueFactory(cd -> cd.getValue().shouldBeExpelled.asObject());
+        var formOfEducation = new TableColumn<StudyGroupWrapper, String>("form_of_education");
+        formOfEducation.setCellValueFactory(cd -> cd.getValue().formOfEducation);
+        var semester = new TableColumn<StudyGroupWrapper, String>("semester");
+        semester.setCellValueFactory(cd -> cd.getValue().semester);
+
+        var admin_name = new TableColumn<StudyGroupWrapper, String>("admin_name");
+        admin_name.setCellValueFactory(cd -> cd.getValue().groupAdmin.name);
+        var admin_weight = new TableColumn<StudyGroupWrapper, Double>("admin_weight");
+        admin_weight.setCellValueFactory(cd -> cd.getValue().groupAdmin.weight.asObject());
+        var admin_eye_color = new TableColumn<StudyGroupWrapper, String>("admin_eye_color");
+        admin_eye_color.setCellValueFactory(cd -> cd.getValue().groupAdmin.eyeColor);
+        var admin_hair_color = new TableColumn<StudyGroupWrapper, String>("admin_hair_color");
+        admin_hair_color.setCellValueFactory(cd -> cd.getValue().groupAdmin.hairColor);
+        var admin_nationality = new TableColumn<StudyGroupWrapper, String>("admin_nationality");
+        admin_nationality.setCellValueFactory(cd -> cd.getValue().groupAdmin.nationality);
+
+        tv.getColumns().addAll(id, name, coordinatesX, coordinatesY, creationDate, studentsCount, shouldBeExpelled, formOfEducation,
+                                    admin_name, admin_weight, admin_hair_color, admin_nationality);
+        tv.visibleProperty().bind(useVisualisationViewProperty.not());
+        tv.setItems(data);
+        pane.getChildren().add(tv);
+//        tableView = tv;
     }
 
     private void initVisualisationView(Pane pane) {
@@ -55,12 +362,46 @@ public class GUICLient extends Application {
         var host = System.getenv("HOST");
         var portString = System.getenv("PORT");
         var port = Integer.parseInt(portString);
+        modalWindowStage = new Stage();
+        notificationWindowStage = new Stage();
         client = new Client(host, port);
+        client.init();
+        pollingData = new ArrayList<>();
+        data = FXCollections.observableArrayList();
 
-        var p = new Pane();
+        threadPoll = new Thread(() -> {
+            while (true) {
+                if (!executing) { return; }
+//                System.out.println("send");
+
+                migrateData();
+
+                send(new RetrieveCommand());
+                lastRetrieveID = lastRequestID - 1;
+
+                try {
+                    Thread.sleep(pollInterval);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        });
+        threadRetrieve = new Thread(() -> {
+            //todo:
+            while (true) {
+                if (!executing) { return; }
+//                System.out.println("receive wait");
+                var r = client.recieve();
+                if (r != null) {
+                    receive(r);
+                }
+            }
+        });
+
+        var p = new VBox();
         initMenuBar(p);
+        initTableView(p);
 
-        var scene = new Scene(p, 800, 600);
+        var scene = new Scene(p, 1200, 600);
 
         var t = new Label();
         t.setText("hello");
@@ -69,9 +410,55 @@ public class GUICLient extends Application {
         stage.setTitle("Collection Manager - GUI Client");
         stage.setScene(scene);
         stage.show();
+
+        threadPoll.start();
+        threadRetrieve.start();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        executing = false;
+        threadPoll.join();
+        threadRetrieve.join();
     }
 
     public static void launch_gui() {
         launch(GUICLient.class);
+    }
+
+    private void migrateData() {
+        var s = new HashSet<Integer>();
+        for (var d : data) {
+            s.add(d.id.get());
+        }
+        for (var i : pollingData) {
+            if (!s.contains(i.id.get())) {
+                data.add(i);
+            } else {
+                s.remove(i.id.get());
+            }
+        }
+        data.removeIf((i) -> s.contains(i.id.get()));
+        pollingData.clear();
+    }
+
+    private void send(Command c) {
+        client.send(new Request(lastRequestID++, c.getName(), Converter.commandToJson(c), credentials));
+        waitingForResponse.put(lastRequestID - 1, Instant.now().getEpochSecond());
+    }
+
+    private void receive(Response r) {
+        if (!waitingForResponse.containsKey(r.requestID())) return;
+
+        if (commandsCallbacks.containsKey(r.requestID())) {
+            commandsCallbacks.get(r.requestID()).run(r);
+            commandsCallbacks.remove(r.requestID());
+            waitingForResponse.remove(r.requestID());
+        } else {
+            if (r.status() == Status.PROCESSED && r.type() == ResponseType.ItemStream && r.requestID() == lastRetrieveID) {
+                var item = Converter.studyGroupFromJson(r.response());
+                pollingData.add(new StudyGroupWrapper(item));
+            }
+        }
     }
 }

@@ -36,6 +36,8 @@ public class Coordinates implements Comparable<Coordinates> {
     public void setY(double y) {
         if (y <= 2) {
             this.y = y;
+        } else {
+            throw new IllegalArgumentException("y should not be bigger than 2");
         }
     }
 

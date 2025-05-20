@@ -10,6 +10,10 @@ public class Person {
     private Color hairColor; //Поле может быть null
     private Country nationality; //Поле не может быть null
 
+    public Person() {
+        name = "";
+    }
+
     public String getName() {
         return name;
     }
